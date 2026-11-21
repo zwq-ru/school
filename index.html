@@ -1,499 +1,479 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Моя школа | Электронный дневник</title>
-<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root {
-    --bg-main: #f4f7fb;
-    --bg-white: #ffffff;
-    --text-main: #0b1f33;
-    --text-gray: #66727f;
-    --text-light: #97a4ba;
-    --blue-gradient: linear-gradient(270deg, #28bbfa, #0856cc);
-    --shadow: 0 2px 12px rgba(12, 41, 117, 0.08);
-}
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 40px; }
-a { text-decoration: none; color: inherit; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Golos Text', -apple-system, sans-serif; background:#f0f2f5; color:#1a1a1a; }
 
-/* ===== ШАПКА ===== */
-.header { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; min-height: 60px; gap: 12px; }
-.logo-area { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.logo-img { height: 34px; width: auto; display: block; }
-.logo-text { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.logo-title { font-size: 18px; font-weight: 800; color: #0b1f33; letter-spacing: 0.3px; line-height: 1.1; }
-.logo-sub { font-size: 14px; font-weight: 600; color: #0e69d5; line-height: 1.1; }
+  header {
+    background:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between;
+    box-shadow:0 1px 4px rgba(0,0,0,.08); position:sticky; top:0; z-index:100; flex-wrap:wrap; gap:8px;
+  }
+  .logo-area { display:flex; align-items:center; gap:12px; }
+  .logo-area img { height:34px; width:auto; display:block; }
+  .logo-text { display:flex; align-items:center; gap:8px; }
+  .logo-text .t1 { font-size:18px; font-weight:700; color:#0e69d5; line-height:1.2; white-space:nowrap; }
+  .logo-text .t2 { font-size:14px; color:#6c737d; line-height:1.2; white-space:nowrap; }
 
-#header-nav { flex: 1; display: flex; justify-content: center; overflow-x: auto; }
+  nav { display:flex; gap:4px; flex-wrap:wrap; }
+  nav button {
+    border:none; background:transparent; padding:8px 14px; border-radius:8px; cursor:pointer;
+    font-family:inherit; font-size:14px; color:#3c4043; display:flex; align-items:center; gap:6px;
+  }
+  nav button:hover { background:#f1f3f4; }
+  nav button.active { background:#e8f0fe; color:#0e69d5; font-weight:600; }
 
-.user-area { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
-.user-role { font-size: 13px; font-weight: 600; color: var(--text-gray); white-space: nowrap; }
-.user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--blue-gradient); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-.btn-logout-top { background: #eef2f7; border: none; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-main); font-weight: 500; transition: 0.2s; font-family: inherit; }
-.btn-logout-top:hover { background: #e0e6f0; }
+  .user-box { display:flex; align-items:center; gap:10px; }
+  .user-box .avatar { width:32px; height:32px; border-radius:50%; background:#0e69d5; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; }
+  .db-status { font-size:12px; padding:3px 10px; border-radius:12px; }
+  .db-ok { background:#e6f4ea; color:#137333; }
+  .db-bad { background:#fce8e6; color:#c5221f; }
 
-.top-nav { display: inline-flex; background: #eef2f7; border-radius: 12px; padding: 4px; gap: 4px; overflow-x: auto; max-width: 100%; }
-.top-nav-btn { background: transparent; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; color: var(--text-gray); font-weight: 500; transition: 0.2s; white-space: nowrap; font-family: inherit; }
-.top-nav-btn.active { background: #fff; color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.08); font-weight: 600; }
+  main { max-width:760px; margin:24px auto; padding:0 16px; }
+  .screen { display:none; }
+  .screen.active { display:block; }
+  h2 { font-size:20px; margin-bottom:16px; font-weight:600; }
 
-.container { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
-.page-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; gap: 12px; }
-.page-title { font-size: 20px; font-weight: 700; }
+  .date-pill {
+    text-align:center; margin:20px auto 10px; padding:5px 16px; background:#e9edf2; border-radius:20px;
+    color:#5f6368; font-size:13px; font-weight:500; width:fit-content;
+  }
+  .day-card { background:#fff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); overflow:hidden; }
+  .grade-row { display:flex; align-items:center; padding:14px 18px; gap:16px; cursor:pointer; }
+  .grade-row + .grade-row { border-top:1px solid #eef0f2; }
+  .grade-row:hover { background:#fafbfc; }
+  .grade-box {
+    min-width:40px; height:40px; border-radius:10px; background:#eef1f5; color:#1a1a1a;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px;
+    position:relative; flex-shrink:0; padding:0 6px;
+  }
+  .g5 { background:#e6f4ea; color:#137333; }
+  .g4 { background:#e8f0fe; color:#1967d2; }
+  .g3 { background:#fef7e0; color:#b06000; }
+  .g2 { background:#fce8e6; color:#c5221f; }
+  .weight-badge {
+    position:absolute; bottom:-6px; right:-6px; background:#0e69d5; color:#fff; font-size:10px;
+    min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    padding:0 4px; font-weight:600; border:2px solid #fff;
+  }
+  .grade-info { flex-grow:1; min-width:0; }
+  .subj { font-size:15px; font-weight:700; line-height:1.3; }
+  .wtype { font-size:13px; color:#6c737d; margin-top:3px; }
+  .arrow { color:#9aa0a6; font-size:20px; flex-shrink:0; }
 
-/* ===== ЖУРНАЛ ===== */
-.journal-controls { display: flex; align-items: center; gap: 14px; background: #fff; padding: 10px 16px; border-radius: 10px; box-shadow: var(--shadow); margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
-.journal-controls label { font-size: 13px; font-weight: 600; color: var(--text-main); }
-.journal-controls select, .journal-controls input { padding: 6px 10px; border: 1px solid #d0d7e2; border-radius: 6px; font-size: 13px; outline: none; font-family: inherit; cursor: pointer; }
+  .card { background:#fff; border-radius:14px; box-shadow:0 1px 3px rgba(0,0,0,.08); padding:18px; margin-bottom:12px; }
 
-.btn { background: #fff; border: 1px solid #d0d7e2; padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; color: var(--text-main); font-family: inherit; }
-.btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+  .empty { text-align:center; color:#9aa0a6; padding:40px 20px; font-size:14px; }
 
-.excel-wrapper { width: 100%; overflow-x: auto; background: #fff; border: 1px solid #a0a0a0; }
-.excel-table { border-collapse: collapse; table-layout: fixed; }
-.excel-table th, .excel-table td {
-    border: 1px solid #a0a0a0;
-    text-align: center; vertical-align: middle; padding: 0;
-    height: 32px; width: 32px; min-width: 32px; max-width: 32px;
-    background: #d9ead3; font-weight: normal; font-size: 12px; color: #333; white-space: nowrap;
-}
-.excel-table th { font-size: 10px; font-weight: 600; line-height: 1.2; }
-.excel-table th.corner { background: #c6e0b4; }
-.excel-table td.row-num { background: #c6e0b4; font-weight: bold; font-size: 10px; width: 28px; min-width: 28px; max-width: 28px; }
-.excel-table td.student-name, .excel-table th.student-name {
-    text-align: left; padding-left: 8px; background: #d9ead3; font-weight: bold; font-size: 12px;
-    position: sticky; left: 28px; z-index: 3; border-right: 2px solid #808080;
-    width: 150px; min-width: 150px; max-width: 150px;
-}
-.excel-table td.data-cell { background: #e2efda; position: relative; }
-.excel-input { width: 100%; height: 30px; border: none; text-align: center; font-size: 14px; font-weight: bold; color: #000; background: transparent; outline: none; font-family: inherit; padding: 0; }
-.excel-input:focus { background: rgba(255,255,255,0.8); outline: 2px solid #2f8dfc; outline-offset: -2px; }
-.excel-input.red { color: #d32f2f; }
-.excel-input.yellow { color: #f57c00; }
-.mark-weight-badge { position: absolute; top: -1px; right: -1px; width: 12px; height: 12px; background: #ff9800; color: #fff; font-size: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid #fff; cursor: pointer; z-index: 5; }
+  table.schedule { width:100%; border-collapse:collapse; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .schedule td, .schedule th { padding:10px 12px; border-bottom:1px solid #eef0f2; font-size:14px; text-align:left; }
+  .schedule th { background:#f7f9fb; font-weight:600; }
+  .schedule .day { font-weight:700; color:#0e69d5; white-space:nowrap; }
 
-/* ===== ДНЕВНИК ===== */
-.diary-date-header { text-align: center; margin: 22px 0 12px; padding: 5px 16px; background: #f0f3f8; border-radius: 20px; color: #5f6368; font-size: 13px; font-weight: 600; display: inline-block; }
-.diary-date-wrap { text-align: center; }
-.day-block { background: #fff; border-radius: 16px; padding: 4px 0; box-shadow: var(--shadow); max-width: 620px; margin: 0 auto; }
-.grade-row { display: flex; align-items: center; padding: 14px 18px; cursor: pointer; border-bottom: 1px solid #eef2f7; transition: background 0.15s; }
-.grade-row:last-child { border-bottom: none; }
-.grade-row:hover { background: #f8fafc; }
-.grade-box { width: 40px; height: 40px; background: #f0f3f8; color: #1a1a1a; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; margin-right: 16px; flex-shrink: 0; position: relative; }
-.grade-box.bad-mark { background: #fdecec; color: #d32f2f; }
-.grade-box.mid-mark { background: #fef3e6; color: #f57c00; }
-.grade-info { flex-grow: 1; min-width: 0; }
-.grade-subject { font-size: 16px; font-weight: 700; color: #1a1a1a; line-height: 1.3; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.grade-type { font-size: 13px; color: #6c737d; line-height: 1.4; }
-.grade-arrow { color: #9aa0a6; margin-left: 12px; font-size: 18px; flex-shrink: 0; }
-.weight-dot { position: absolute; bottom: -4px; right: -4px; min-width: 16px; height: 16px; background: #0e69d5; color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #fff; }
+  .journal-controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:14px; }
+  .journal-controls select, .journal-controls input {
+    padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; background:#fff;
+  }
+  table.jgrid { width:100%; border-collapse:collapse; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .jgrid th, .jgrid td { border:1px solid #eef0f2; text-align:center; font-size:13px; padding:0; }
+  .jgrid th { background:#137333; color:#fff; font-weight:500; padding:6px 4px; }
+  .jgrid .name { background:#f7f9fb; font-weight:600; padding:0 10px; text-align:left; white-space:nowrap; height:40px; }
+  .jgrid .cell { width:32px; height:32px; cursor:pointer; font-weight:600; }
+  .jgrid .cell:hover { outline:2px solid #0e69d5; outline-offset:-2px; }
+  .jgrid .cell.empty-c { color:#c3c8ce; }
+  .hint { font-size:12px; color:#6c737d; margin-top:10px; }
 
-.filter-row { display: flex; gap: 12px; justify-content: center; }
-.filter-btn { background: #fff; border-radius: 12px; padding: 12px 24px; box-shadow: var(--shadow); font-weight: 600; font-size: 14px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; color: var(--text-gray); font-family: inherit; }
-.filter-btn.active { color: #0e69d5; border-color: #0e69d5; }
+  .hw-item { border-left:4px solid #0e69d5; }
+  .hw-item .meta { font-size:12px; color:#6c737d; margin-bottom:4px; }
+  .form-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .form-row input, .form-row select, .form-row button {
+    padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px;
+  }
+  .btn { background:#0e69d5; color:#fff; border:none !important; cursor:pointer; font-weight:600; }
+  .btn:hover { background:#0b5bbd; }
+  .btn-secondary { background:#e8f0fe; color:#0e69d5; cursor:pointer; font-weight:600; }
 
-/* ===== РАСПИСАНИЕ ===== */
-.schedule-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-.day-col { background: #fff; border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
-.day-title { font-weight: 700; text-align: center; margin-bottom: 12px; color: #0e69d5; border-bottom: 2px solid #eef2f7; padding-bottom: 8px; font-size: 14px; }
-.lesson-item { padding: 7px 0; border-bottom: 1px solid #f4f7fb; font-size: 12.5px; }
-.lesson-item:last-child { border-bottom: none; }
+  .login-wrap { max-width:380px; margin:60px auto; }
+  .login-wrap input { width:100%; padding:12px; margin-bottom:10px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:15px; }
+  .login-wrap .btn { width:100%; padding:12px; font-size:15px; }
+  .login-hint { font-size:12px; color:#6c737d; text-align:center; margin-top:14px; line-height:1.6; }
+  .error-msg { background:#fce8e6; color:#c5221f; padding:10px 14px; border-radius:10px; font-size:13px; margin-bottom:12px; display:none; }
 
-/* ===== ЗАДАНИЯ ===== */
-.hw-card { background: #fff; border-radius: 14px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; max-width: 680px; margin-left: auto; margin-right: auto; }
-.hw-subject { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
-.hw-text { color: var(--text-gray); font-size: 14px; margin-bottom: 6px; }
-.hw-meta { font-size: 12px; color: #97a4ba; }
-.hw-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #d0d7e2; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: transparent; font-size: 15px; flex-shrink: 0; margin-left: 12px; }
-.hw-check.done { background: #e5f0fd; border-color: #0e69d5; color: #0e69d5; }
-
-/* ===== АВТОРИЗАЦИЯ ===== */
-.auth-overlay { position: fixed; inset: 0; background: var(--bg-main); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
-.auth-card { background: #fff; border-radius: 20px; padding: 32px 24px; width: 100%; max-width: 380px; box-shadow: 0 8px 32px rgba(12, 41, 117, 0.12); text-align: center; }
-.btn-gosuslugi { display: flex; align-items: center; justify-content: center; gap: 8px; background: #0d4cd3; color: #fff; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; width: 100%; transition: 0.2s; font-family: inherit; }
-.btn-gosuslugi:hover { background: #0a3ea8; }
-.form-group { margin-bottom: 12px; text-align: left; }
-.form-group label { font-size: 13px; color: var(--text-gray); display: block; margin-bottom: 4px; }
-.form-group input { width: 100%; padding: 10px; border: 1px solid #d0d7e2; border-radius: 8px; font-size: 14px; font-family: inherit; }
-.hidden { display: none !important; }
-.empty-msg { text-align: center; padding: 40px; color: #97a4ba; }
+  .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; align-items:center; justify-content:center; z-index:200; }
+  .modal { background:#fff; border-radius:16px; padding:24px; width:90%; max-width:420px; }
+  .modal h3 { margin-bottom:12px; font-size:17px; }
+  .modal .grade-opts { display:flex; gap:8px; margin:12px 0; }
+  .modal .grade-opts button { flex:1; padding:14px 0; font-size:18px; font-weight:700; border:1px solid #dadce0; border-radius:12px; background:#fff; cursor:pointer; font-family:inherit; }
+  .modal .grade-opts button:hover { background:#f1f3f4; }
+  .modal .mrow { display:flex; gap:8px; }
+  .modal .mrow button { flex:1; padding:10px; border-radius:10px; border:1px solid #dadce0; background:#fff; cursor:pointer; font-family:inherit; }
 </style>
 </head>
 <body>
 
-<header class="header">
-    <div class="logo-area">
-        <img class="logo-img" src="https://gu-st.ru/epgu-app-school-st/assets/svg/logo-big.svg" alt="Логотип" onerror="this.style.display='none'">
-        <div class="logo-text">
-            <span class="logo-title">МОЯ ШКОЛА</span>
-            <span class="logo-sub">| ЭЛЕКТРОННЫЙ ДНЕВНИК</span>
-        </div>
+<header>
+  <div class="logo-area">
+    <img src="//gu-st.ru/epgu-app-school-st/assets/svg/logo-big.svg" alt="" onerror="this.style.display='none'">
+    <div class="logo-text">
+      <span class="t1">МОЯ ШКОЛА</span>
+      <span class="t2">| ЭЛЕКТРОННЫЙ ДНЕВНИК</span>
     </div>
-    <div id="header-nav"></div>
-    <div class="user-area" id="header-user"></div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="user-box" id="userBox"></div>
 </header>
 
-<main class="container" id="app"></main>
-
-<div id="auth-screen" class="auth-overlay hidden">
-    <div class="auth-card">
-        <h2 style="margin-bottom: 24px; font-size: 20px;">Вход в систему</h2>
-        <button class="btn-gosuslugi" onclick="showLoginForm()">Госуслуги — Войти</button>
-        <div id="login-form-container" class="hidden" style="margin-top: 20px;">
-            <form onsubmit="handleAuth(event)">
-                <div class="form-group"><label>Логин</label><input type="text" id="auth-login" required placeholder="admin, teacher, student1"></div>
-                <div class="form-group"><label>Пароль</label><input type="password" id="auth-password" required placeholder="****"></div>
-                <button type="submit" class="btn-gosuslugi" style="margin-top: 8px;">Войти</button>
-            </form>
-            <div style="font-size: 12px; color: #97a4ba; margin-top: 16px; line-height: 1.6;">
-                Админ: <b>admin / admin</b><br>
-                Учитель: <b>teacher / teacher</b><br>
-                Ученик: <b>student1 / student1</b>
-            </div>
-        </div>
+<main>
+  <!-- ВХОД -->
+  <div class="screen" id="screen-login">
+    <div class="login-wrap">
+      <div class="card">
+        <h2 style="text-align:center;">Вход в дневник</h2>
+        <div class="error-msg" id="loginError"></div>
+        <input id="loginUser" placeholder="Логин" autocomplete="username">
+        <input id="loginPass" type="password" placeholder="Пароль" autocomplete="current-password">
+        <button class="btn" onclick="doLogin()">Войти</button>
+        <div class="login-hint">Ученик: student1 / student1<br>Учитель: teacher / teacher</div>
+      </div>
     </div>
+  </div>
+
+  <!-- ДНЕВНИК -->
+  <div class="screen" id="screen-diary"><h2>Оценки</h2><div id="diaryList"></div></div>
+
+  <!-- ЖУРНАЛ (учитель) -->
+  <div class="screen" id="screen-journal">
+    <h2>Журнал</h2>
+    <div class="journal-controls">
+      <select id="jSubject">
+        <option>Русский язык</option><option>Математика</option><option>Литературное чтение</option>
+        <option>Окружающий мир</option><option>Физкультура</option><option>Музыка</option>
+        <option>Изобразительное искусство</option><option>Технология</option><option>Английский язык</option>
+      </select>
+      <select id="jType">
+        <option>Ответ на уроке</option><option>Контрольная работа</option><option>Самостоятельная работа</option>
+        <option>Тест</option><option>Проект</option><option>Домашняя работа</option><option>Диктант</option>
+      </select>
+    </div>
+    <div id="journalTable"></div>
+    <div class="hint">Левый клик по клетке — поставить оценку. Правый клик — изменить вес.</div>
+  </div>
+
+  <!-- РАСПИСАНИЕ -->
+  <div class="screen" id="screen-schedule"><h2>Расписание</h2><div id="scheduleList"></div></div>
+
+  <!-- ЗАДАНИЯ -->
+  <div class="screen" id="screen-homework">
+    <h2>Задания</h2>
+    <div id="hwTeacherForm" style="display:none;">
+      <div class="card">
+        <div class="form-row">
+          <select id="hwSubject" style="flex:1;">
+            <option>Русский язык</option><option>Математика</option><option>Литературное чтение</option>
+            <option>Окружающий мир</option><option>Физкультура</option><option>Музыка</option>
+          </select>
+          <input id="hwText" placeholder="Текст задания" style="flex:2;">
+          <input id="hwDue" type="date" style="flex:1;">
+          <button class="btn" onclick="addHomework()">Добавить</button>
+        </div>
+      </div>
+    </div>
+    <div id="hwList"></div>
+  </div>
+
+  <!-- ПРОФИЛЬ -->
+  <div class="screen" id="screen-profile"><h2>Профиль</h2><div class="card" id="profileCard"></div></div>
+</main>
+
+<!-- МОДАЛКА ОЦЕНКИ -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="modalTitle"></h3>
+    <div class="grade-opts">
+      <button onclick="pickGrade('5')">5</button>
+      <button onclick="pickGrade('4')">4</button>
+      <button onclick="pickGrade('3')">3</button>
+      <button onclick="pickGrade('2')">2</button>
+    </div>
+    <div class="mrow">
+      <button onclick="pickGrade('')">Удалить</button>
+      <button onclick="closeModal()">Отмена</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// ---------- БАЗА ----------
-function getToday() {
-    var d = new Date();
-    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-function uid() { return Math.random().toString(36).substr(2, 9); }
+// ===== FIREBASE (конфиг вставлен) =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCw3RLQB_6HcOT8odym-CDGx4MQL5OT9Kw",
+  authDomain: "school-f7fdd.firebaseapp.com",
+  databaseURL: "https://school-f7fdd-default-rtdb.firebaseio.com",
+  projectId: "school-f7fdd",
+  storageBucket: "school-f7fdd.firebasestorage.app",
+  messagingSenderId: "882294124527",
+  appId: "1:882294124527:web:88f08a5d68f02e76e6901a"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const gradesRef = db.ref('grades');
+const hwRef = db.ref('homework');
 
-var STUDENTS = [
-    { name: 'Антон' }, { name: 'Алексей' }, { name: 'Анастасия' }, { name: 'Андрей' },
-    { name: 'Анна' }, { name: 'Борис' }, { name: 'Виктория' }, { name: 'Владислав' },
-    { name: 'Дарья' }, { name: 'Денис' }
-];
-
-var SUBJECTS_LIST = ['Русский язык', 'Математика', 'Литер. чтение', 'Окруж. мир', 'ИЗО', 'Труд(технология)', 'Физкультура', 'Англ. яз.', 'Музыка'];
-var WORK_TYPES = ['Ответ на уроке', 'Контрольная работа', 'Самостоятельная работа', 'Тест', 'Проект', 'Домашняя работа', 'Диктант'];
-
-var defaultDB = {
-    users: [
-        { id: 'u1', login: 'admin', pass: 'admin', role: 'admin', name: 'Администратор', className: '' },
-        { id: 'u2', login: 'teacher', pass: 'teacher', role: 'teacher', name: 'Учитель', className: '' }
-    ].concat(STUDENTS.map(function(s, i) {
-        return { id: 'u' + (i + 3), login: 'student' + (i + 1), pass: 'student' + (i + 1), role: 'student', name: s.name, className: '3 «В» класс' };
-    })),
-    marks: [
-        { id: 'm1', studentId: 'u3', subject: 'Русский язык', date: getToday(), value: '5', weight: 3, type: 'Контрольная работа' },
-        { id: 'm2', studentId: 'u3', subject: 'Математика', date: getToday(), value: '4', weight: 2, type: 'Самостоятельная работа' },
-        { id: 'm3', studentId: 'u3', subject: 'Окруж. мир', date: getToday(), value: '2', weight: 1, type: 'Ответ на уроке' }
-    ]
+// ===== ПОЛЬЗОВАТЕЛИ =====
+const USERS = {
+  student1: { pass:'student1', role:'student', name:'Антон Смирнов', klass:'4 «А»' },
+  teacher:  { pass:'teacher',  role:'teacher', name:'Елена Ивановна', klass:'Учитель' }
 };
 
-var db = JSON.parse(localStorage.getItem('school_db_v38')) || JSON.parse(JSON.stringify(defaultDB));
-var user = JSON.parse(localStorage.getItem('school_user_v38')) || null;
+let currentUser = null;
+let GRADES = [];
+let HOMEWORK = [];
+let cellTarget = null; // {student, date}
 
-var currentSection = 'diary';
-var currentFilter = 'all';
-var journalSubject = 'Математика';
-var currentWorkType = 'Ответ на уроке';
-var currentWeekOffset = 0;
+// ===== СИНХРОНИЗАЦИЯ С БАЗОЙ =====
+gradesRef.on('value', snap => {
+  const val = snap.val() || {};
+  GRADES = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
+  renderAll();
+}, err => setDbStatus(false, err));
 
-var MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+hwRef.on('value', snap => {
+  const val = snap.val() || {};
+  HOMEWORK = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
+  renderAll();
+});
 
-function saveDB() { localStorage.setItem('school_db_v38', JSON.stringify(db)); }
-function saveUser() { localStorage.setItem('school_user_v38', JSON.stringify(user)); }
-function logout() { localStorage.removeItem('school_user_v38'); user = null; render(); }
-function isTeacher() { return user && (user.role === 'teacher' || user.role === 'admin'); }
+function setDbStatus(ok, err){
+  const el = document.getElementById('dbStatus');
+  if (!el) return;
+  if (ok){ el.className='db-status db-ok'; el.textContent='База подключена'; }
+  else { el.className='db-status db-bad'; el.textContent='Нет связи с базой'; console.error(err); }
+}
+db.ref('.info/connected').on('value', s => setDbStatus(!!s.val()));
 
-function fmtDate(iso) {
-    var p = iso.split('-');
-    return Number(p[2]) + ' ' + MONTHS[Number(p[1]) - 1];
+// ===== ВХОД =====
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const acc = USERS[u];
+  if (acc && acc.pass === p){
+    currentUser = Object.assign({ login:u }, acc);
+    sessionStorage.setItem('who', u);
+    document.getElementById('loginError').style.display='none';
+    buildUI();
+  } else {
+    const e = document.getElementById('loginError');
+    e.textContent = 'Неверный логин или пароль';
+    e.style.display='block';
+  }
+}
+function logout(){ currentUser=null; sessionStorage.removeItem('who'); buildUI(); }
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// ===== ИНТЕРФЕЙС =====
+const TABS = [
+  { id:'diary', label:'Дневник', roles:['student','teacher'] },
+  { id:'journal', label:'Журнал', roles:['teacher'] },
+  { id:'schedule', label:'Расписание', roles:['student','teacher'] },
+  { id:'homework', label:'Задания', roles:['student','teacher'] },
+  { id:'profile', label:'Профиль', roles:['student','teacher'] }
+];
+let activeTab = 'diary';
+
+function buildUI(){
+  const nav = document.getElementById('nav');
+  const userBox = document.getElementById('userBox');
+  if (!currentUser){
+    nav.innerHTML=''; userBox.innerHTML='';
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-login').classList.add('active');
+    return;
+  }
+  userBox.innerHTML = '<span class="db-status db-ok" id="dbStatus">База подключена</span>' +
+    '<div class="avatar">'+currentUser.name.charAt(0)+'</div>' +
+    '<span style="font-size:14px;">'+currentUser.name+'</span>' +
+    '<button class="btn-secondary" style="border:none;padding:7px 14px;border-radius:8px;" onclick="logout()">Выйти</button>';
+  nav.innerHTML = TABS.filter(t=>t.roles.includes(currentUser.role))
+    .map(t => '<button class="'+(t.id===activeTab?'active':'')+'" onclick="switchTab(\''+t.id+'\')">'+t.label+'</button>').join('');
+  switchTab(activeTab);
+}
+function switchTab(id){
+  activeTab = id;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>{
+    b.classList.toggle('active', b.textContent.trim() === TABS.find(t=>t.id===id).label);
+  });
+  renderAll();
 }
 
-function handleAuth(e) {
-    e.preventDefault();
-    var login = document.getElementById('auth-login').value.trim();
-    var pass = document.getElementById('auth-password').value;
-    var u = db.users.find(function(x) { return x.login === login && x.pass === pass; });
-    if (!u) { alert('Неверный логин или пароль'); return; }
-    user = u; saveUser();
-    currentSection = (u.role === 'student') ? 'diary' : 'journal';
-    render();
+// ===== РЕНДЕР =====
+const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+function isoToLabel(iso){
+  const d = new Date(iso);
+  return d.getDate() + ' ' + MONTHS[d.getMonth()];
 }
-function showLoginForm() { document.getElementById('login-form-container').classList.remove('hidden'); }
+function gradeClass(v){ return 'g'+String(v).charAt(0); }
 
-function switchSection(s) { currentSection = s; render(); }
-
-// ---------- РЕНДЕР ----------
-function render() {
-    var authScreen = document.getElementById('auth-screen');
-    var headerUser = document.getElementById('header-user');
-    var app = document.getElementById('app');
-
-    if (!user) {
-        authScreen.classList.remove('hidden');
-        headerUser.innerHTML = '';
-        document.getElementById('header-nav').innerHTML = '';
-        app.innerHTML = '';
-        return;
-    }
-    authScreen.classList.add('hidden');
-
-    headerUser.innerHTML =
-        '<div class="user-role">' + (isTeacher() ? 'Я — учитель' : 'Я — ученик') + '</div>' +
-        '<div class="user-avatar" onclick="switchSection(\'profile\')" title="' + user.name + '">' + user.name.substring(0,2).toUpperCase() + '</div>' +
-        '<button class="btn-logout-top" onclick="logout()">Выйти</button>';
-
-    var nav = '';
-    if (isTeacher()) {
-        nav =
-            '<button class="top-nav-btn ' + (currentSection==='journal'?'active':'') + '" onclick="switchSection(\'journal\')">Журнал</button>' +
-            '<button class="top-nav-btn ' + (currentSection==='schedule'?'active':'') + '" onclick="switchSection(\'schedule\')">Расписание</button>' +
-            '<button class="top-nav-btn ' + (currentSection==='homework'?'active':'') + '" onclick="switchSection(\'homework\')">Задания</button>';
-    } else {
-        nav =
-            '<button class="top-nav-btn ' + (currentSection==='diary'?'active':'') + '" onclick="switchSection(\'diary\')">Дневник</button>' +
-            '<button class="top-nav-btn ' + (currentSection==='schedule'?'active':'') + '" onclick="switchSection(\'schedule\')">Расписание</button>' +
-            '<button class="top-nav-btn ' + (currentSection==='homework'?'active':'') + '" onclick="switchSection(\'homework\')">Задания</button>';
-    }
-    document.getElementById('header-nav').innerHTML = nav;
-
-    var content = '';
-    if (currentSection === 'journal') content = renderTeacherJournal();
-    else if (currentSection === 'diary') content = renderDiary();
-    else if (currentSection === 'schedule') content = renderSchedule();
-    else if (currentSection === 'homework') content = renderHomework();
-    else if (currentSection === 'profile') content = renderProfile();
-
-    app.innerHTML = '<div class="page-header"><div class="top-nav">' + nav + '</div></div>' + content;
+function renderAll(){
+  renderDiary(); renderJournal(); renderSchedule(); renderHomework(); renderProfile();
 }
 
-// ---------- ЖУРНАЛ ----------
-function renderTeacherJournal() {
-    var students = db.users.filter(function(u) { return u.role === 'student'; });
-    var today = new Date();
-    var dow = today.getDay() || 7;
-    var monday = new Date(today);
-    monday.setDate(today.getDate() - dow + 1 + currentWeekOffset * 7);
-
-    var weekDates = [];
-    for (var i = 0; i < 7; i++) {
-        var d = new Date(monday);
-        d.setDate(monday.getDate() + i);
-        weekDates.push({
-            day: d.getDate(),
-            iso: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'),
-            wd: ['вс','пн','вт','ср','чт','пт','сб'][d.getDay()]
-        });
-    }
-
-    var subjOptions = SUBJECTS_LIST.map(function(s) {
-        return '<option value="' + s + '" ' + (s === journalSubject ? 'selected' : '') + '>' + s + '</option>';
-    }).join('');
-    var typeOptions = WORK_TYPES.map(function(t) {
-        return '<option value="' + t + '" ' + (t === currentWorkType ? 'selected' : '') + '>' + t + '</option>';
-    }).join('');
-
-    var rows = students.map(function(s, idx) {
-        var cells = weekDates.map(function(d) {
-            var mark = db.marks.find(function(m) { return m.studentId === s.id && m.subject === journalSubject && m.date === d.iso; });
-            var val = mark ? mark.value : '';
-            var cls = '';
-            if (val === '2') cls = 'red';
-            else if (val === '3') cls = 'yellow';
-            var badge = '';
-            if (mark) {
-                badge = '<div class="mark-weight-badge" onclick="editWeight(event, \'' + s.id + '\', \'' + d.iso + '\')" title="Вес">' + (mark.weight || 1) + '</div>';
-            }
-            return '<td class="data-cell">' + badge +
-                '<input type="text" maxlength="2" class="excel-input ' + cls + '" value="' + val + '"' +
-                ' onchange="updateMarkInline(\'' + s.id + '\', \'' + d.iso + '\', this.value)"' +
-                ' oncontextmenu="editWeight(event, \'' + s.id + '\', \'' + d.iso + '\')">' +
-                '</td>';
-        }).join('');
-        return '<tr><td class="row-num">' + (idx + 1) + '</td><td class="student-name">' + s.name + '</td>' + cells + '</tr>';
-    }).join('');
-
-    var header = weekDates.map(function(d) {
-        return '<th>' + d.day + '<br><span style="font-size:9px;font-weight:normal;">' + d.wd + '</span></th>';
-    }).join('');
-
-    return '<div class="page-header"><div class="page-title">Журнал — ' + journalSubject + '</div></div>' +
-        '<div class="journal-controls">' +
-            '<label>Предмет:</label><select onchange="journalSubject=this.value; render()">' + subjOptions + '</select>' +
-            '<label>Тип работы:</label><select onchange="currentWorkType=this.value; render()">' + typeOptions + '</select>' +
-            '<div style="flex:1;"></div>' +
-            '<button class="btn" onclick="changeWeek(-1)">&larr; Пред. неделя</button>' +
-            '<button class="btn" onclick="changeWeek(0)">Текущая</button>' +
-            '<button class="btn" onclick="changeWeek(1)">След. неделя &rarr;</button>' +
+function renderDiary(){
+  const box = document.getElementById('diaryList');
+  if (!currentUser) return;
+  const login = currentUser.role==='student' ? currentUser.login : null;
+  let list = GRADES.filter(g => !login || g.student === login);
+  if (login) list = list.filter(g => g.student === login);
+  const groups = {};
+  list.forEach(g => { const d = g.date || '—'; (groups[d] = groups[d] || []).push(g); });
+  const dates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
+  if (!dates.length){ box.innerHTML = '<div class="empty">Оценок пока нет</div>'; return; }
+  box.innerHTML = dates.map(d =>
+    '<div class="date-pill">'+isoToLabel(d)+'</div>' +
+    '<div class="day-card">' + groups[d].map(g =>
+      '<div class="grade-row">' +
+        '<div class="grade-box '+gradeClass(g.value)+'">'+g.value +
+          (g.weight>1 ? '<span class="weight-badge">'+g.weight+'</span>' : '') +
         '</div>' +
-        '<div class="excel-wrapper"><table class="excel-table"><thead><tr>' +
-            '<th class="corner"></th><th class="student-name">Фамилия, имя</th>' + header +
-        '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
-        '<div style="text-align:center; margin-top:10px; font-size:12px; color:#97a4ba;">Правый клик по клетке — вес оценки</div>';
+        '<div class="grade-info"><div class="subj">'+g.subject+'</div>' +
+        '<div class="wtype">'+(g.typeWork||'Ответ на уроке')+'</div></div>' +
+        '<div class="arrow">›</div>' +
+      '</div>').join('') +
+    '</div>').join('');
 }
 
-function changeWeek(off) { currentWeekOffset = (off === 0) ? 0 : currentWeekOffset + off; render(); }
-
-function updateMarkInline(studentId, date, value) {
-    if (!isTeacher()) return;
-    value = String(value).trim();
-    var mark = db.marks.find(function(m) { return m.studentId === studentId && m.subject === journalSubject && m.date === date; });
-    if (mark) {
-        if (value === '') db.marks = db.marks.filter(function(m) { return m.id !== mark.id; });
-        else mark.value = value;
-    } else if (value !== '') {
-        db.marks.push({ id: 'm' + uid(), studentId: studentId, subject: journalSubject, date: date, value: value, weight: 1, type: currentWorkType });
-    }
-    saveDB(); render();
+// ===== ЖУРНАЛ =====
+function lastWeekdays(n){
+  const days = [];
+  let d = new Date();
+  while (days.length < n){
+    if (d.getDay() !== 0 && d.getDay() !== 6) days.push(new Date(d));
+    d.setDate(d.getDate()-1);
+  }
+  return days.reverse();
+}
+const DAYS = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+function renderJournal(){
+  if (!currentUser || currentUser.role!=='teacher') return;
+  const dates = lastWeekdays(8);
+  const subj = document.getElementById('jSubject').value;
+  let html = '<table class="jgrid"><tr><th style="text-align:left;padding-left:10px;">Ученик</th>';
+  dates.forEach(d => html += '<th>'+DAYS[d.getDay()]+'<br>'+d.getDate()+'</th>');
+  html += '</tr>';
+  Object.keys(USERS).filter(u=>u.startsWith('student')).forEach(stu => {
+    html += '<tr><td class="name">'+USERS[stu].name+'</td>';
+    dates.forEach(d => {
+      const iso = d.toISOString().slice(0,10);
+      const g = GRADES.find(x => x.student===stu && x.subject===subj && x.date===iso);
+      if (g){
+        html += '<td><div class="cell '+gradeClass(g.value)+'" style="width:100%;height:40px;border-radius:0;" ' +
+          'onclick="openCell(\''+stu+'\',\''+iso+'\',\''+g.id+'\')" ' +
+          'oncontextmenu="setWeight(event,\''+g.id+'\');return false;">'+g.value+
+          (g.weight>1?'<span class="weight-badge">'+g.weight+'</span>':'')+'</div></td>';
+      } else {
+        html += '<td><div class="cell empty-c" style="width:100%;height:40px;border-radius:0;" ' +
+          'onclick="openCell(\''+stu+'\',\''+iso+'\',null)">·</div></td>';
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</table>';
+  document.getElementById('journalTable').innerHTML = html;
 }
 
-function editWeight(e, studentId, date) {
-    if (!isTeacher()) return;
-    e.preventDefault(); e.stopPropagation();
-    var mark = db.marks.find(function(m) { return m.studentId === studentId && m.subject === journalSubject && m.date === date; });
-    if (!mark) { alert('Сначала введите оценку!'); return; }
-    var w = prompt('Вес оценки (1, 2, 3):', mark.weight || 1);
-    if (w && parseInt(w) > 0) { mark.weight = parseInt(w); saveDB(); render(); }
+function openCell(student, iso, gradeId){
+  cellTarget = { student, iso, gradeId };
+  const s = USERS[student].name;
+  document.getElementById('modalTitle').textContent = s + ' · ' + isoToLabel(iso) + ' · ' + document.getElementById('jSubject').value;
+  document.getElementById('modalBg').style.display='flex';
 }
+function closeModal(){ document.getElementById('modalBg').style.display='none'; }
 
-// ---------- ДНЕВНИК ----------
-function renderDiary() {
-    var studentMarks = db.marks.filter(function(m) { return m.studentId === user.id; });
-    var html = '';
-
-    if (currentFilter === 'final') {
-        var finals = [];
-        SUBJECTS_LIST.forEach(function(subj) {
-            var mm = studentMarks.filter(function(m) { return m.subject === subj; });
-            if (mm.length > 0) {
-                var sum = 0, wts = 0;
-                mm.forEach(function(m) {
-                    var v = parseFloat(m.value);
-                    if (!isNaN(v)) { var w = m.weight || 1; sum += v * w; wts += w; }
-                });
-                var f = wts > 0 ? Math.round(sum / wts) : '—';
-                finals.push({ subject: subj, value: String(f), type: 'Итоговая' });
-            }
-        });
-        html += '<div class="day-block">';
-        if (finals.length === 0) html += '<div class="empty-msg">Оценок пока нет</div>';
-        finals.forEach(function(m) {
-            var cls = m.value === '2' ? 'bad-mark' : (m.value === '3' ? 'mid-mark' : '');
-            html += '<div class="grade-row"><div class="grade-box ' + cls + '">' + m.value + '</div>' +
-                '<div class="grade-info"><div class="grade-subject">' + m.subject + '</div>' +
-                '<div class="grade-type">' + m.type + '</div></div>' +
-                '<div class="grade-arrow">&rsaquo;</div></div>';
-        });
-        html += '</div>';
+function pickGrade(v){
+  if (!cellTarget) return;
+  const subj = document.getElementById('jSubject').value;
+  const type = document.getElementById('jType').value;
+  if (v === ''){
+    if (cellTarget.gradeId) gradesRef.child(cellTarget.gradeId).remove();
+  } else {
+    if (cellTarget.gradeId){
+      gradesRef.child(cellTarget.gradeId).update({ value:v, typeWork:type });
     } else {
-        // группировка по датам
-        var grouped = {};
-        studentMarks.forEach(function(m) {
-            var d = m.date || '—';
-            if (!grouped[d]) grouped[d] = [];
-            grouped[d].push(m);
-        });
-        var dates = Object.keys(grouped).sort(function(a, b) { return b.localeCompare(a); });
-
-        if (dates.length === 0) {
-            html += '<div class="empty-msg">Оценок пока нет</div>';
-        }
-        dates.forEach(function(date) {
-            var items = grouped[date];
-            html += '<div class="diary-date-wrap"><div class="diary-date-header">' + (date === '—' ? 'Без даты' : fmtDate(date)) + '</div></div>';
-            html += '<div class="day-block">';
-            items.forEach(function(m) {
-                var cls = m.value === '2' ? 'bad-mark' : (m.value === '3' ? 'mid-mark' : '');
-                var wd = (m.weight && m.weight > 1) ? '<div class="weight-dot">' + m.weight + '</div>' : '';
-                html += '<div class="grade-row" onclick="markInfo(\'' + (m.id || '') + '\')">' +
-                    '<div class="grade-box ' + cls + '">' + m.value + wd + '</div>' +
-                    '<div class="grade-info"><div class="grade-subject">' + (m.subject || '') + '</div>' +
-                    '<div class="grade-type">' + (m.type || 'Работа на уроке') + '</div></div>' +
-                    '<div class="grade-arrow">&rsaquo;</div></div>';
-            });
-            html += '</div>';
-        });
+      gradesRef.push({
+        student: cellTarget.student,
+        subject: subj,
+        value: v,
+        weight: 1,
+        typeWork: type,
+        date: cellTarget.iso
+      });
     }
-
-    return '<div class="page-header"><div class="page-title">Оценки</div>' +
-        '<div class="filter-row">' +
-            '<button class="filter-btn ' + (currentFilter==='all'?'active':'') + '" onclick="currentFilter=\'all\'; render()">Все оценки</button>' +
-            '<button class="filter-btn ' + (currentFilter==='final'?'active':'') + '" onclick="currentFilter=\'final\'; render()">Итоговые</button>' +
-        '</div></div>' + html;
+  }
+  closeModal();
+}
+function setWeight(e, id){
+  e.preventDefault();
+  const g = GRADES.find(x=>x.id===id);
+  if (!g) return;
+  const w = prompt('Вес оценки (1–5):', g.weight || 1);
+  if (w !== null){
+    const n = Math.min(5, Math.max(1, parseInt(w)||1));
+    gradesRef.child(id).update({ weight:n });
+  }
 }
 
-function markInfo(id) {
-    var m = db.marks.find(function(x) { return x.id === id; });
-    if (m) alert(m.subject + ' — ' + m.value + '\n' + (m.type || '') + '\nВес: ' + (m.weight || 1) + '\nДата: ' + fmtDate(m.date || ''));
+// ===== РАСПИСАНИЕ =====
+const SCHEDULE = {
+  'Понедельник': ['Русский язык','Математика','Литературное чтение','Физкультура'],
+  'Вторник': ['Математика','Окружающий мир','Русский язык','Музыка'],
+  'Среда': ['Литературное чтение','Русский язык','Изобразительное искусство','Технология'],
+  'Четверг': ['Математика','Английский язык','Окружающий мир','Физкультура'],
+  'Пятница': ['Русский язык','Математика','Литературное чтение','Музыка']
+};
+function renderSchedule(){
+  document.getElementById('scheduleList').innerHTML = Object.keys(SCHEDULE).map(day =>
+    '<table class="schedule" style="margin-bottom:12px;"><tr><th class="day" colspan="2">'+day+'</th></tr>' +
+    SCHEDULE[day].map((s,i)=>'<tr><td style="width:40px;color:#6c737d;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('') +
+    '</table>').join('');
 }
 
-// ---------- РАСПИСАНИЕ ----------
-function renderSchedule() {
-    var days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'];
-    var plan = {
-        'Понедельник': ['08:10 Русский язык (211)', '09:00 Математика (211)', '10:00 Окруж. мир (211)'],
-        'Вторник': ['08:10 Литер. чтение (214)', '09:00 Англ. яз. (205)', '10:00 Физкультура (спортзал)'],
-        'Среда': ['08:10 Математика (211)', '09:00 ИЗО (208)', '10:00 Музыка (203)'],
-        'Четверг': ['08:10 Русский язык (211)', '09:00 Окруж. мир (211)', '10:00 Труд(технология) (102)'],
-        'Пятница': ['08:10 Литер. чтение (214)', '09:00 Математика (211)', '10:00 Физкультура (спортзал)']
-    };
-    var html = '<div class="page-header"><div class="page-title">Расписание</div></div><div class="schedule-grid">';
-    days.forEach(function(day) {
-        html += '<div class="day-col"><div class="day-title">' + day + '</div>';
-        plan[day].forEach(function(l) { html += '<div class="lesson-item">' + l + '</div>'; });
-        html += '</div>';
-    });
-    html += '</div>';
-    return html;
+// ===== ЗАДАНИЯ =====
+function renderHomework(){
+  document.getElementById('hwTeacherForm').style.display = currentUser && currentUser.role==='teacher' ? 'block':'none';
+  const list = HOMEWORK.sort((a,b)=> new Date(a.due||0) - new Date(b.due||0));
+  document.getElementById('hwList').innerHTML = list.length ? list.map(h =>
+    '<div class="card hw-item"><div class="meta">'+h.subject+(h.due?' · до '+isoToLabel(h.due):'')+'</div>'+h.text+'</div>').join('')
+    : '<div class="empty">Заданий нет</div>';
+}
+function addHomework(){
+  const text = document.getElementById('hwText').value.trim();
+  const subj = document.getElementById('hwSubject').value;
+  const due = document.getElementById('hwDue').value;
+  if (!text) return;
+  hwRef.push({ subject:subj, text:text, due:due||null });
+  document.getElementById('hwText').value='';
 }
 
-// ---------- ЗАДАНИЯ ----------
-function getHomework() {
-    var hw = db.homework;
-    if (!hw) {
-        hw = [
-            { id: 'h1', date: getToday(), subject: 'Русский язык', text: 'с. 44 №82', doneBy: [] },
-            { id: 'h2', date: getToday(), subject: 'Математика', text: 'с. 64 №4', doneBy: [] }
-        ];
-        db.homework = hw; saveDB();
-    }
-    return hw;
+// ===== ПРОФИЛЬ =====
+function renderProfile(){
+  if (!currentUser) return;
+  document.getElementById('profileCard').innerHTML =
+    '<div style="display:flex;align-items:center;gap:16px;">' +
+    '<div class="avatar" style="width:64px;height:64px;font-size:26px;background:#0e69d5;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;">'+currentUser.name.charAt(0)+'</div>' +
+    '<div><div style="font-size:18px;font-weight:700;">'+currentUser.name+'</div>' +
+    '<div style="color:#6c737d;font-size:14px;margin-top:4px;">'+currentUser.klass+'</div></div></div>';
 }
 
-function renderHomework() {
-    var hwList = getHomework();
-    var html = '<div class="page-header"><div class="page-title">Домашние задания</div></div>';
-    if (hwList.length === 0) return html + '<div class="empty-msg">Заданий нет</div>';
-    hwList.forEach(function(hw) {
-        var isDone = user && user.role === 'student' && hw.doneBy.indexOf(user.id) > -1;
-        html += '<div class="hw-card"><div>' +
-            '<div class="hw-subject">' + hw.subject + '</div>' +
-            '<div class="hw-text">' + hw.text + '</div>' +
-            '<div class="hw-meta">К ' + fmtDate(hw.date) + '</div></div>' +
-            (isTeacher() ? '' : '<div class="hw-check ' + (isDone ? 'done' : '') + '" onclick="toggleHomework(\'' + hw.id + '\')">&#10003;</div>') +
-            '</div>';
-    });
-    return html;
-}
-
-function toggleHomework(id) {
-    var hw = getHomework().find(function(h) { return h.id === id; });
-    if (!hw || !user) return;
-    var i = hw.doneBy.indexOf(user.id);
-    if (i > -1) hw.doneBy.splice(i, 1); else hw.doneBy.push(user.id);
-    saveDB(); render();
-}
-
-// ---------- ПРОФИЛЬ ----------
-function renderProfile() {
-    return '<div class="page-header"><div class="page-title">Профиль</div></div>' +
-        '<div style="background:#fff; padding:24px; border-radius:16px; box-shadow:var(--shadow); max-width:480px; margin:0 auto;">' +
-        '<div style="font-size:24px; font-weight:700; margin-bottom:8px;">' + user.name + '</div>' +
-        '<div style="color:#97a4ba; margin-bottom:16px;">' + (user.role === 'student' ? user.className : (user.role === 'teacher' ? 'Учитель' : 'Администратор')) + '</div>' +
-        '<div style="font-size:13px; color:#66727f;">Логин: <b>' + user.login + '</b></div>' +
-        '</div>';
-}
-
-render();
+// ===== СТАРТ =====
+buildUI();
 </script>
 </body>
 </html>
