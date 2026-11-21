@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Моя школа</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #f4f7fb;
+            --bg-white: #ffffff;
+            --text-main: #0b1f33;
+            --text-gray: #66727f;
+            --text-light: #97a4ba;
+            --blue-gradient: linear-gradient(270deg, #28bbfa, #0856cc);
+            --shadow: 0 2px 12px rgba(12, 41, 117, 0.08);
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 20px; }
+        a { text-decoration: none; color: inherit; }
+
+        /* Header & Logo */
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; min-height: 64px; }
+        .logo-area { display: flex; align-items: center; user-select: none; width: 250px; }
+        .logo-img { height: 30px; width: auto; }
+
+        #header-nav { flex: 1; display: flex; justify-content: center; overflow-x: auto; }
+
+        .user-area { display: flex; align-items: center; justify-content: flex-end; gap: 12px; width: 250px; }
+        .user-role { font-size: 14px; font-weight: 600; color: var(--text-gray); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--blue-gradient); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+        .btn-logout-top { background: #eef2f7; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--text-main); font-weight: 500; transition: 0.2s; }
+        .btn-logout-top:hover { background: #e5eaf5; }
+
+        /* Навигация */
+        .top-nav { display: flex; background: #eef2f7; border-radius: 12px; padding: 4px; gap: 4px; overflow-x: auto; }
+        .top-nav-btn { background: transparent; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; color: var(--text-gray); font-weight: 500; transition: 0.2s; white-space: nowrap; }
+        .top-nav-btn.active { background: #fff; color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.08); font-weight: 600; }
+
+        /* Main Container */
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px 16px; }
+        .page-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; padding-top: 12px; gap: 16px; position: relative; }
+        .page-title { font-size: 20px; font-weight: 600; }
+
+        /* Контролы */
+        .journal-controls { display: flex; align-items: center; gap: 16px; background: #fff; padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 16px; flex-wrap: wrap; justify-content: center; border: 1px solid #d0d7e2; }
+        .journal-controls label { font-size: 13px; font-weight: 600; color: var(--text-main); }
+        .journal-controls select, .journal-controls input[type="date"] { padding: 6px 10px; border: 1px solid #a0a0a0; border-radius: 4px; font-size: 13px; outline: none; font-family: inherit; cursor: pointer; }
+
+        .btn { background: #fff; border: 1px solid #d0d7e2; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; color: var(--text-main); display: inline-flex; align-items: center; gap: 6px; }
+        .btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+        .btn-primary { background: var(--blue-gradient); color: #fff; border: none; }
+        .btn-primary:hover { opacity: 0.9; }
+
+        /* Таблица Excel (Журнал учителя) */
+        .excel-wrapper { width: 100%; overflow-x: auto; background: #fff; border: 1px solid #a0a0a0; }
+        .excel-table { border-collapse: collapse; font-family: 'Golos Text', Arial, sans-serif; table-layout: fixed; width: auto; }
+
+        .excel-table th, .excel-table td {
+            border: 1px solid #a0a0a0;
+            text-align: center;
+            vertical-align: middle;
+            padding: 0;
+            height: 32px !important;
+            width: 32px !important;
+            min-width: 32px !important;
+            max-width: 32px !important;
+            background: #d9ead3;
+            font-weight: normal;
+            font-size: 12px;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .excel-table th {
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1;
+            width: 32px;
+            min-width: 32px;
+            max-width: 32px;
+        }
+
+        .excel-table th.corner { background: #c6e0b4; }
+
+        .excel-table td.student-name, .excel-table th.student-name {
+            text-align: left;
+            padding-left: 8px;
+            background: #d9ead3;
+            font-weight: bold;
+            font-size: 13px;
+            position: sticky;
+            left: 32px;
+            z-index: 3;
+            border-right: 2px solid #808080;
+            width: 160px !important;
+            min-width: 160px !important;
+            max-width: 160px !important;
+        }
+
+        .excel-table td.row-num {
+            background: #c6e0b4;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .excel-table td.data-cell {
+            background: #e2efda;
+            position: relative;
+        }
+
+        .excel-input {
+            width: 100%;
+            height: 32px !important;
+            border: none; text-align: center;
+            font-size: 14px; font-weight: bold; color: #000; background: transparent;
+            outline: none; font-family: 'Golos Text', Arial, sans-serif; padding: 0;
+        }
+        .excel-input:focus { background: rgba(255,255,255,0.8); outline: 2px solid #2f8dfc; outline-offset: -2px; }
+
+        .excel-input.red { color: #d32f2f; }
+        .excel-input.yellow { color: #f57c00; }
+
+        .mark-weight-badge {
+            position: absolute; top: 0; right: 0; transform: translate(30%, -30%);
+            min-width: 14px; height: 14px; background: #ff9800; color: #fff;
+            font-size: 9px; font-weight: bold; display: flex; align-items: center;
+            justify-content: center; border-radius: 50%; border: 1px solid #fff;
+            cursor: pointer; z-index: 5; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            padding: 0 2px;
+        }
+
+        /* ===== Дневник ученика — как в "Моей школе" ===== */
+        .diary-list { max-width: 620px; margin: 0 auto; }
+
+        .diary-date-header {
+            text-align: center;
+            margin: 24px 0 12px;
+            padding: 6px 16px;
+            background: #eef1f6;
+            border-radius: 20px;
+            color: #5f6368;
+            font-size: 13px;
+            font-weight: 500;
+            display: table;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .diary-date-header:first-child { margin-top: 8px; }
+
+        .grade-group {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .grade-card-new {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .grade-card-new + .grade-card-new { border-top: 1px solid #f0f2f5; }
+        .grade-card-new:hover { background: #fafbfd; }
+
+        .grade-box-new {
+            width: 40px;
+            height: 40px;
+            background: #f5f7fa;
+            border: 1px solid rgba(14, 105, 213, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #1a1a1a;
+            margin-right: 16px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .grade-box-new.mark-2 { background: #fdecea; border-color: rgba(211, 47, 47, 0.3); color: #d32f2f; }
+        .grade-box-new.mark-3 { background: #fef3e6; border-color: rgba(245, 124, 0, 0.3); color: #f57c00; }
+
+        .grade-weight-badge {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0e69d5;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 700;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #fff;
+            z-index: 3;
+            box-sizing: border-box;
+        }
+
+        .grade-info-new { flex-grow: 1; min-width: 0; }
+        .grade-subject-new { font-size: 16px; font-weight: 700; color: #1a1a1a; line-height: 1.3; margin-bottom: 2px; }
+        .grade-type-new { font-size: 13px; color: #6c737d; line-height: 1.4; }
+        .grade-arrow-new { color: #9aa0a6; margin-left: 12px; font-size: 18px; flex-shrink: 0; }
+
+        .filter-row { display: flex; gap: 12px; margin-bottom: 8px; justify-content: center; }
+        .filter-btn { background: #fff; border-radius: 12px; padding: 14px 24px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; transition: 0.2s; color: var(--text-main); }
+        .filter-btn:hover { box-shadow: 0 4px 16px rgba(12, 41, 117, 0.12); }
+        .filter-btn.selected { outline: 2px solid #0e69d5; outline-offset: -2px; }
+
+        /* Расписание и Задания */
+        .schedule-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 1000px; margin: 0 auto; }
+        .day-col { background: #fff; border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+        .day-title { font-weight: 700; text-align: center; margin-bottom: 12px; color: #0e69d5; border-bottom: 2px solid #eef2f7; padding-bottom: 8px; }
+        .lesson-item { padding: 8px 0; border-bottom: 1px solid #f4f7fb; font-size: 13px; }
+        .lesson-item:last-child { border-bottom: none; }
+
+        .hw-card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; max-width: 680px; margin-left: auto; margin-right: auto; }
+        .hw-info { flex: 1; }
+        .hw-subject { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+        .hw-text { color: var(--text-gray); font-size: 14px; margin-bottom: 6px; }
+        .hw-meta { font-size: 12px; color: #94a3b8; }
+        .hw-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #d0d7e2; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: transparent; font-size: 16px; flex-shrink: 0; margin-left: 12px; }
+        .hw-check.done { background: #e5f0fd; border-color: #0e69d5; color: #0e69d5; }
+
+        /* Авторизация */
+        .auth-overlay { position: fixed; inset: 0; background: var(--bg-main); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+        .auth-card { background: #fff; border-radius: 20px; padding: 32px 24px; width: 100%; max-width: 380px; box-shadow: 0 8px 32px rgba(12, 41, 117, 0.12); text-align: center; }
+        .btn-gosuslugi { display: flex; align-items: center; justify-content: center; gap: 8px; background: #0d4cd3; color: #fff; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; width: 100%; transition: 0.2s; }
+        .btn-gosuslugi:hover { background: #0a3ea8; }
+        .gos-logo { font-weight: 800; font-size: 18px; letter-spacing: -1px; }
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { font-size: 13px; color: var(--text-gray); display: block; margin-bottom: 4px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #d0d7e2; border-radius: 6px; font-size: 14px; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header class="header" id="main-header">
+        <div class="logo-area">
+            <img src="//gu-st.ru/epgu-app-school-st/assets/svg/logo-big.svg" alt="Моя школа" class="logo-img">
+        </div>
+        <div id="header-nav"></div>
+        <div class="user-area" id="header-user"></div>
+    </header>
+
+    <main class="container" id="app"></main>
+
+    <!-- Экран Авторизации -->
+    <div id="auth-screen" class="auth-overlay hidden">
+        <div class="auth-card">
+            <h2 style="margin-bottom: 24px; font-size: 20px;">Вход в систему</h2>
+            <button class="btn-gosuslugi" onclick="showLoginForm()">
+                <span class="gos-logo">Госуслуги</span> Войти
+            </button>
+
+            <div id="login-form-container" class="hidden" style="margin-top: 20px;">
+                <form onsubmit="handleAuth(event)">
+                    <div class="form-group"><label>Логин</label><input type="text" id="auth-login" required placeholder="admin, teacher, student1"></div>
+                    <div class="form-group"><label>Пароль</label><input type="password" id="auth-password" required placeholder="****"></div>
+                    <button type="submit" class="btn-gosuslugi" style="width: 100%; margin-top: 8px;">Войти</button>
+                </form>
+                <div style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 16px;">
+                    Админ: <b>admin / admin</b><br>
+                    Учитель: <b>teacher / teacher</b><br>
+                    Ученик: <b>student1 / student1</b>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- БАЗА ДАННЫХ ---
+    const defaultDB = {
+        users: [
+            { id: 'u1', login: 'admin', pass: 'admin', role: 'admin', name: 'Администратор', className: '' },
+            { id: 'u2', login: 'teacher', pass: 'teacher', role: 'teacher', name: 'Учитель', className: '' },
+            { id: 'u3', login: 'student1', pass: 'student1', role: 'student', name: 'Антон', className: '3 «В» класс' },
+            { id: 'u4', login: 'student2', pass: 'student2', role: 'student', name: 'Алексей', className: '3 «В» класс' },
+            { id: 'u5', login: 'student3', pass: 'student3', role: 'student', name: 'Анастасия', className: '3 «В» класс' },
+            { id: 'u6', login: 'student4', pass: 'student4', role: 'student', name: 'Андрей', className: '3 «В» класс' },
+            { id: 'u7', login: 'student5', pass: 'student5', role: 'student', name: 'Анна', className: '3 «В» класс' },
+            { id: 'u8', login: 'student6', pass: 'student6', role: 'student', name: 'Борис', className: '3 «В» класс' },
+            { id: 'u9', login: 'student7', pass: 'student7', role: 'student', name: 'Виктория', className: '3 «В» класс' },
+            { id: 'u10', login: 'student8', pass: 'student8', role: 'student', name: 'Владислав', className: '3 «В» класс' },
+            { id: 'u11', login: 'student9', pass: 'student9', role: 'student', name: 'Дарья', className: '3 «В» класс' },
+            { id: 'u12', login: 'student10', pass: 'student10', role: 'student', name: 'Денис', className: '3 «В» класс' }
+        ],
+        lessons: [
+            { id: 'l1', date: getToday(), time: '08:10', subject: 'Русский язык', room: '211' },
+            { id: 'l2', date: getToday(), time: '09:00', subject: 'Математика', room: '211' }
+        ],
+        homework: [
+            { id: 'h1', date: getToday(), subject: 'Русский язык', text: 'с. 44 №82', doneBy: [] },
+            { id: 'h2', date: getToday(), subject: 'Математика', text: 'с. 64 №4', doneBy: [] }
+        ],
+        marks: [
+            { id: 'm1', studentId: 'u3', subject: 'Русский язык', date: getToday(), value: '5', weight: 1, type: 'Ответ на уроке' },
+            { id: 'm2', studentId: 'u3', subject: 'Математика', date: getToday(), value: '4', weight: 2, type: 'Самостоятельная работа' }
+        ],
+        events: [],
+        notes: []
+    };
+
+    let db = JSON.parse(localStorage.getItem('school_db_v38')) || defaultDB;
+    let user = JSON.parse(localStorage.getItem('school_user')) || null;
+
+    let currentSection = 'diary';
+    let currentFilter = 'all';
+    let journalSubject = 'Математика';
+    let workType = 'Ответ на уроке';
+    let currentWeekOffset = 0;
+
+    const SUBJECTS_LIST = ['Русский язык', 'Математика', 'Литер. чтение', 'Окруж. мир', 'ИЗО', 'Труд(технология)', 'Физкультура', 'Англ. яз.', 'Музыка'];
+    const WORK_TYPES = ['Ответ на уроке', 'Контрольная работа', 'Самостоятельная работа', 'Тест', 'Проект', 'Домашняя работа', 'Диктант'];
+
+    function getToday() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function saveDB() { localStorage.setItem('school_db_v38', JSON.stringify(db)); }
+    function saveUser(u) { user = u; localStorage.setItem('school_user', JSON.stringify(u)); }
+    function logout() { localStorage.removeItem('school_user'); user = null; render(); }
+    function uid() { return Math.random().toString(36).substr(2, 9); }
+
+    function isTeacher() { return user && (user.role === 'teacher' || user.role === 'admin'); }
+
+    function handleAuth(e) {
+        e.preventDefault();
+        const login = document.getElementById('auth-login').value;
+        const pass = document.getElementById('auth-password').value;
+        const u = db.users.find(u => u.login === login && u.pass === pass);
+        if (!u) return alert('Неверный логин или пароль');
+        saveUser(u);
+        currentSection = (u.role === 'student') ? 'diary' : 'journal';
+        render();
+    }
+
+    function showLoginForm() {
+        document.getElementById('login-form-container').classList.remove('hidden');
+    }
+
+    // --- РЕНДЕР ---
+    function render() {
+        const authScreen = document.getElementById('auth-screen');
+        const headerUser = document.getElementById('header-user');
+        const app = document.getElementById('app');
+
+        if (!user) {
+            authScreen.classList.remove('hidden');
+            headerUser.innerHTML = '';
+            app.innerHTML = '';
+            return;
+        }
+
+        authScreen.classList.add('hidden');
+
+        const userInitials = user.name.substring(0, 2).toUpperCase();
+        const userRole = isTeacher() ? 'Я — учитель' : 'Я — ученик';
+
+        headerUser.innerHTML = '<div class="user-role">' + userRole + '</div>' +
+            '<div class="user-avatar" onclick="switchSection(\'profile\')">' + userInitials + '</div>' +
+            '<button class="btn-logout-top" onclick="logout()">Выйти</button>';
+
+        let navHtml = '';
+        if (isTeacher()) {
+            navHtml = '<button class="top-nav-btn ' + (currentSection==='journal'?'active':'') + '" onclick="switchSection(\'journal\')">Журнал</button>' +
+                '<button class="top-nav-btn ' + (currentSection==='schedule'?'active':'') + '" onclick="switchSection(\'schedule\')">Расписание</button>' +
+                '<button class="top-nav-btn ' + (currentSection==='homework'?'active':'') + '" onclick="switchSection(\'homework\')">Домашние задания</button>';
+        } else {
+            navHtml = '<button class="top-nav-btn ' + (currentSection==='diary'?'active':'') + '" onclick="switchSection(\'diary\')">Дневник</button>' +
+                '<button class="top-nav-btn ' + (currentSection==='schedule'?'active':'') + '" onclick="switchSection(\'schedule\')">Расписание</button>' +
+                '<button class="top-nav-btn ' + (currentSection==='homework'?'active':'') + '" onclick="switchSection(\'homework\')">Задания</button>';
+        }
+
+        let contentHtml = '';
+        if (currentSection === 'journal') contentHtml = renderTeacherJournal();
+        else if (currentSection === 'diary') contentHtml = renderDiary();
+        else if (currentSection === 'schedule') contentHtml = renderSchedule();
+        else if (currentSection === 'homework') contentHtml = renderHomeworkSection();
+        else if (currentSection === 'profile') contentHtml = renderProfile();
+
+        app.innerHTML = '<div class="top-nav">' + navHtml + '</div>' + contentHtml;
+    }
+
+    function switchSection(section) { currentSection = section; render(); }
+
+    // --- ЖУРНАЛ (УЧИТЕЛЬ) ---
+    function renderTeacherJournal() {
+        const students = db.users.filter(u => u.role === 'student');
+
+        const today = new Date();
+        const dayOfWeek = today.getDay() || 7;
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - dayOfWeek + 1 + currentWeekOffset * 7);
+
+        let weekDates = [];
+        for (let i = 0; i < 7; i++) {
+            let d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            weekDates.push({
+                day: d.getDate(),
+                iso: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'),
+                wd: ['вс','пн','вт','ср','чт','пт','сб'][d.getDay()]
+            });
+        }
+
+        const typeOptions = WORK_TYPES.map(t => '<option value="' + t + '" ' + (t === workType ? 'selected' : '') + '>' + t + '</option>').join('');
+        const subjOptions = SUBJECTS_LIST.map(s => '<option value="' + s + '" ' + (s === journalSubject ? 'selected' : '') + '>' + s + '</option>').join('');
+
+        return '<div class="page-header"><div class="page-title">Журнал</div></div>' +
+            '<div class="journal-controls">' +
+                '<label>Предмет:</label>' +
+                '<select onchange="journalSubject=this.value; render();">' + subjOptions + '</select>' +
+                '<label>Тип работы:</label>' +
+                '<select onchange="workType=this.value;">' + typeOptions + '</select>' +
+                '<div style="flex:1;"></div>' +
+                '<button class="btn" onclick="changeWeek(-1)">&#8592; Пред. неделя</button>' +
+                '<button class="btn" onclick="changeWeek(0)">Текущая</button>' +
+                '<button class="btn" onclick="changeWeek(1)">След. неделя &#8594;</button>' +
+            '</div>' +
+            '<div class="excel-wrapper">' +
+                '<table class="excel-table">' +
+                    '<thead><tr>' +
+                        '<th class="corner"></th><th class="corner"></th>' +
+                        weekDates.map(d => '<th class="day-header">' + d.day + '<br><span style="font-size:9px; font-weight:normal;">' + d.wd + '</span></th>').join('') +
+                    '</tr></thead>' +
+                    '<tbody>' +
+                        students.map((s, index) => {
+                            let rowHtml = '<tr><td class="row-num">' + (index + 1) + '</td><td class="student-name">' + s.name + '</td>';
+                            rowHtml += weekDates.map(d => {
+                                const mark = db.marks.find(m => m.studentId === s.id && m.subject === journalSubject && m.date === d.iso);
+                                const val = mark ? mark.value : '';
+                                let colorClass = '';
+                                if (val === '2') colorClass = 'red';
+                                else if (val === '3') colorClass = 'yellow';
+                                let weightHtml = '';
+                                if (mark) {
+                                    const w = mark.weight || 1;
+                                    weightHtml = '<div class="mark-weight-badge" onclick="editWeight(event, \'' + s.id + '\', \'' + journalSubject + '\', \'' + d.iso + '\')" title="Вес">' + w + '</div>';
+                                }
+                                return '<td class="data-cell">' + weightHtml +
+                                    '<input type="text" class="excel-input ' + colorClass + '" value="' + val + '" ' +
+                                    'onchange="updateMarkInline(\'' + s.id + '\', \'' + journalSubject + '\', \'' + d.iso + '\', this.value)" ' +
+                                    'oncontextmenu="editWeight(event, \'' + s.id + '\', \'' + journalSubject + '\', \'' + d.iso + '\')">' +
+                                    '</td>';
+                            }).join('');
+                            return rowHtml + '</tr>';
+                        }).join('') +
+                    '</tbody>' +
+                '</table>' +
+            '</div>';
+    }
+
+    function changeWeek(offset) {
+        if (offset === 0) currentWeekOffset = 0;
+        else currentWeekOffset += offset;
+        render();
+    }
+
+    function updateMarkInline(studentId, subject, date, value) {
+        if (!isTeacher()) return;
+        value = value.trim();
+        const existingMark = db.marks.find(m => m.studentId === studentId && m.subject === subject && m.date === date);
+        if (existingMark) {
+            if (value === '') db.marks = db.marks.filter(m => m.id !== existingMark.id);
+            else existingMark.value = value;
+        } else if (value !== '') {
+            db.marks.push({ id: 'm'+uid(), studentId, subject, date, value, weight: 1, type: workType });
+        }
+        saveDB(); render();
+    }
+
+    function editWeight(e, studentId, subject, date) {
+        if (!isTeacher()) return;
+        e.preventDefault(); e.stopPropagation();
+        const mark = db.marks.find(m => m.studentId === studentId && m.subject === subject && m.date === date);
+        if (!mark) { alert('Сначала введите оценку!'); return; }
+        const w = prompt('Вес оценки (1, 2, 3):', mark.weight || 1);
+        if (w && parseInt(w) > 0) { mark.weight = parseInt(w); saveDB(); render(); }
+    }
+
+    // --- ДНЕВНИК (УЧЕНИК) ---
+    function renderDiary() {
+        const studentMarks = db.marks.filter(m => m.studentId === user.id);
+
+        let filteredMarks = studentMarks;
+        if (currentFilter === 'final') {
+            filteredMarks = [];
+            SUBJECTS_LIST.forEach(subj => {
+                const marks = studentMarks.filter(m => m.subject === subj);
+                if (marks.length > 0) {
+                    let sum = 0, weights = 0;
+                    marks.forEach(m => { const val = parseFloat(m.value); if (!isNaN(val)) { sum += val * (m.weight || 1); weights += (m.weight || 1); } });
+                    const final = weights > 0 ? Math.round(sum / weights) : '—';
+                    filteredMarks.push({ id: 'final_'+subj, subject: subj, value: String(final), type: 'Итоговая', date: 'final', weight: 1 });
+                }
+            });
+        }
+
+        // Группируем по датам
+        const groups = {};
+        filteredMarks.forEach(m => {
+            const key = m.date === 'final' ? 'final' : m.date;
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(m);
+        });
+
+        const keys = Object.keys(groups).sort((a, b) => {
+            if (a === 'final') return -1;
+            if (b === 'final') return 1;
+            return b.localeCompare(a);
+        });
+
+        let html = '<div class="page-header">' +
+                '<div class="page-title">Оценки</div>' +
+                '<div class="filter-row">' +
+                    '<button class="filter-btn ' + (currentFilter==='all'?'selected':'') + '" onclick="currentFilter=\'all\'; render();">&#9881; Статистика</button>' +
+                    '<button class="filter-btn ' + (currentFilter==='final'?'selected':'') + '" onclick="currentFilter=\'final\'; render();">&#128203; Итоговые</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="diary-list">';
+
+        if (keys.length === 0) {
+            html += '<div style="text-align:center; color:#94a3b8; margin-top:40px;">Оценок пока нет</div></div>';
+            return html;
+        }
+
+        keys.forEach(key => {
+            const marks = groups[key];
+            const dateLabel = key === 'final' ? 'Итоговые оценки' : formatDate(key);
+            html += '<div class="diary-date-header">' + dateLabel + '</div>';
+            html += '<div class="grade-group">';
+            marks.forEach(m => {
+                let boxClass = 'grade-box-new';
+                if (m.value === '2') boxClass += ' mark-2';
+                else if (m.value === '3') boxClass += ' mark-3';
+                let weightBadge = '';
+                if (m.weight && m.weight > 1) weightBadge = '<div class="grade-weight-badge">' + m.weight + '</div>';
+                html += '<div class="grade-card-new" onclick="alert(\'Подробности: ' + m.subject + ' - ' + m.value + ' (' + m.type + ')\')">' +
+                            '<div class="' + boxClass + '"><span>' + m.value + '</span>' + weightBadge + '</div>' +
+                            '<div class="grade-info-new">' +
+                                '<div class="grade-subject-new">' + m.subject + '</div>' +
+                                '<div class="grade-type-new">' + (m.type || 'Ответ на уроке') + '</div>' +
+                            '</div>' +
+                            '<div class="grade-arrow-new">&#8250;</div>' +
+                        '</div>';
+            });
+            html += '</div>';
+        });
+
+        html += '</div>';
+        return html;
+    }
+
+    function formatDate(isoDate) {
+        const today = getToday();
+        const d = new Date(isoDate);
+        const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+
+        if (isoDate === today) return 'Сегодня, ' + d.getDate() + ' ' + months[d.getMonth()];
+
+        const y = new Date();
+        y.setDate(y.getDate() - 1);
+        const yIso = y.getFullYear() + '-' + String(y.getMonth()+1).padStart(2,'0') + '-' + String(y.getDate()).padStart(2,'0');
+        if (isoDate === yIso) return 'Вчера, ' + d.getDate() + ' ' + months[d.getMonth()];
+
+        return d.getDate() + ' ' + months[d.getMonth()];
+    }
+
+    // --- РАСПИСАНИЕ ---
+    function renderSchedule() {
+        const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'];
+        return '<div class="page-header"><div class="page-title">Расписание</div></div>' +
+            '<div class="schedule-grid">' +
+            days.map((day, index) => {
+                const date = new Date();
+                const dayOfWeek = date.getDay() || 7;
+                const monday = new Date(date);
+                monday.setDate(date.getDate() - dayOfWeek + 1 + currentWeekOffset * 7);
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + index);
+                const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+                const lessons = db.lessons.filter(l => l.date === iso).sort((a, b) => a.time.localeCompare(b.time));
+                return '<div class="day-col">' +
+                    '<div class="day-title">' + day + '<br><span style="font-size:11px; color:#94a3b8;">' + d.getDate() + ' ' + months[d.getMonth()] + '</span></div>' +
+                    (lessons.length ? lessons.map(l =>
+                        '<div class="lesson-item"><div style="font-weight:600;">' + l.time + ' — ' + l.subject + '</div><div style="color: var(--text-gray);">кабинет ' + l.room + '</div></div>'
+                    ).join('') : '<div class="lesson-item" style="color:#94a3b8;">Нет уроков</div>') +
+                    '</div>';
+            }).join('') +
+            '</div>';
+    }
+
+    // --- ДОМАШНИЕ ЗАДАНИЯ ---
+    function renderHomeworkSection() {
+        const teacher = isTeacher();
+
+        let html = '<div class="page-header"><div class="page-title">' + (teacher ? 'Домашние задания' : 'Задания') + '</div></div>';
+
+        if (teacher) {
+            const subjOptions = SUBJECTS_LIST.map(s => '<option value="' + s + '">' + s + '</option>').join('');
+            html += '<div style="max-width:680px; margin:0 auto 16px; background:#fff; border-radius:12px; padding:16px; box-shadow: var(--shadow);">' +
+                '<div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">' +
+                    '<select id="hw-subject" style="padding:8px; border:1px solid #a0a0a0; border-radius:4px;">' + subjOptions + '</select>' +
+                    '<input type="date" id="hw-date" value="' + getToday() + '" style="padding:8px; border:1px solid #a0a0a0; border-radius:4px;">' +
+                    '<input type="text" id="hw-text" placeholder="Задание, например: с. 64 №4" style="flex:1; min-width:180px; padding:8px; border:1px solid #a0a0a0; border-radius:4px;">' +
+                    '<button class="btn btn-primary" onclick="addHomework()">Добавить</button>' +
+                '</div></div>';
+        }
+
+        const list = db.homework.slice().sort((a, b) => b.date.localeCompare(a.date));
+
+        if (list.length === 0) {
+            html += '<div style="text-align:center; color: #94a3b8; margin-top: 40px;">Заданий пока нет</div>';
+            return html;
+        }
+
+        html += list.map(h => {
+            const done = !teacher && h.doneBy && h.doneBy.includes(user.id);
+            return '<div class="hw-card"><div class="hw-info">' +
+                    '<div class="hw-subject">' + h.subject + '</div>' +
+                    '<div class="hw-text">' + h.text + '</div>' +
+                    '<div class="hw-meta">' + formatDate(h.date) + '</div>' +
+                '</div>' +
+                (teacher
+                    ? '<button class="btn" onclick="deleteHomework(\'' + h.id + '\')">Удалить</button>'
+                    : '<div class="hw-check ' + (done ? 'done' : '') + '" onclick="toggleHomework(\'' + h.id + '\')">&#10003;</div>') +
+                '</div>';
+        }).join('');
+
+        return html;
+    }
+
+    function addHomework() {
+        if (!isTeacher()) return;
+        const subject = document.getElementById('hw-subject').value;
+        const date = document.getElementById('hw-date').value || getToday();
+        const text = document.getElementById('hw-text').value.trim();
+        if (!text) return alert('Введите задание');
+        db.homework.push({ id: 'h'+uid(), date, subject, text, doneBy: [] });
+        saveDB(); render();
+    }
+
+    function deleteHomework(id) {
+        if (!isTeacher()) return;
+        if (confirm('Удалить задание?')) {
+            db.homework = db.homework.filter(h => h.id !== id);
+            saveDB(); render();
+        }
+    }
+
+    function toggleHomework(id) {
+        const h = db.homework.find(h => h.id === id);
+        if (!h) return;
+        if (!h.doneBy) h.doneBy = [];
+        const i = h.doneBy.indexOf(user.id);
+        if (i === -1) h.doneBy.push(user.id); else h.doneBy.splice(i, 1);
+        saveDB(); render();
+    }
+
+    // --- ПРОФИЛЬ ---
+    function renderProfile() {
+        const roleNames = { admin: 'Администратор', teacher: 'Учитель', student: 'Ученик' };
+        return '<div class="page-header"><div class="page-title">Профиль</div></div>' +
+            '<div class="grade-card-new" style="cursor: default; max-width: 620px; margin: 0 auto;">' +
+                '<div class="grade-box-new">' + user.name.substring(0, 2).toUpperCase() + '</div>' +
+                '<div class="grade-info-new">' +
+                    '<div class="grade-subject-new">' + user.name + '</div>' +
+                    '<div class="grade-type-new">' + (roleNames[user.role] || user.role) + (user.className ? ' • ' + user.className : '') + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<button class="btn" onclick="logout()" style="display: block; margin: 20px auto;">Выйти из аккаунта</button>';
+    }
+
+    // --- СТАРТ ---
+    render();
+</script>
+
+</body>
+</html>
