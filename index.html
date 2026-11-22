@@ -143,7 +143,7 @@ table.pgrid { width:100%; border-collapse:collapse; background:#fff; box-shadow:
   <!-- ДНЕВНИК (ученик) -->
   <div class="screen" id="screen-diary"><h2>Оценки</h2><div id="diaryList"></div></div>
 
-  <!-- ОТМЕТКИ (учитель, бывший Журнал) -->
+  <!-- ОТМЕТКИ (учитель) -->
   <div class="screen" id="screen-journal">
     <h2>Отметки</h2>
     <div class="journal-controls">
@@ -316,6 +316,26 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
 // ===== ИНТЕРФЕЙС =====
 let activeTab = 'diary';
 
+function currentTabs(){
+  if (!currentUser) return [];
+  if (currentUser.role === 'teacher'){
+    return [
+      { id:'journal',     label:'Отметки' },
+      { id:'schedule',    label:'Расписание' },
+      { id:'homework',    label:'Домашние задания' },
+      { id:'performance', label:'Успеваемость' },
+      { id:'remarks',     label:'Замечания' },
+      { id:'events',      label:'События' }
+    ];
+  }
+  return [
+    { id:'diary',    label:'Дневник' },
+    { id:'schedule', label:'Расписание' },
+    { id:'homework', label:'Задания' },
+    { id:'profile',  label:'Профиль' }
+  ];
+}
+
 function buildUI(){
   const nav = document.getElementById('nav');
   const userBox = document.getElementById('userBox');
@@ -329,27 +349,8 @@ function buildUI(){
     '<div class="avatar">'+currentUser.name.charAt(0)+'</div>' +
     '<span style="font-size:14px;">'+currentUser.name+'</span>' +
     '<button class="btn-secondary" style="border:none;padding:7px 14px;border-radius:8px;" onclick="logout()">Выйти</button>';
-
-  let tabs;
-  if (currentUser.role === 'teacher'){
-    tabs = [
-      { id:'journal',     label:'Отметки' },
-      { id:'schedule',    label:'Расписание' },
-      { id:'homework',    label:'Домашние задания' },
-      { id:'performance', label:'Успеваемость' },
-      { id:'remarks',     label:'Замечания' },
-      { id:'events',      label:'События' }
-    ];
-  } else {
-    tabs = [
-      { id:'diary',    label:'Дневник' },
-      { id:'schedule', label:'Расписание' },
-      { id:'homework', label:'Задания' },
-      { id:'profile',  label:'Профиль' }
-    ];
-  }
-  nav.innerHTML = tabs.map(t =>
-    '<button class="'+(t.id===activeTab?'active':'')+'" onclick="switchTab(\''+t.id+'\')">'+t.label+'</button>').join('');
+  nav.innerHTML = currentTabs().map(t =>
+    '<button data-tab="'+t.id+'" class="'+(t.id===activeTab?'active':'')+'" onclick="switchTab(\''+t.id+'\')">'+t.label+'</button>').join('');
   switchTab(activeTab);
 }
 
@@ -357,6 +358,10 @@ function switchTab(id){
   activeTab = id;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
+  // Обновляем подсветку кнопок меню
+  document.querySelectorAll('nav button').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === id);
+  });
   renderAll();
 }
 
@@ -518,6 +523,14 @@ const DEFAULT_SCHEDULE = {
   'Пятница':'Русский язык\nМатематика\nЛитературное чтение\nМузыка'
 };
 function schedText(day){ return (SCHED && SCHED[day]) ? SCHED[day] : (DEFAULT_SCHEDULE[day] || ''); }
+function scheduleTablesHTML(){
+  return WEEK_DAYS.map(day => {
+    const lessons = schedText(day).split('\n').filter(x=>x.trim());
+    return '<table class="schedule" style="margin-bottom:12px;"><tr><th class="day" colspan="2">'+day+'</th></tr>' +
+      lessons.map((s,i)=>'<tr><td style="width:40px;color:#6c737d;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('') +
+      '</table>';
+  }).join('');
+}
 
 function renderSchedule(){
   const view = document.getElementById('scheduleList');
@@ -529,21 +542,10 @@ function renderSchedule(){
       WEEK_DAYS.map(d => '<label style="font-size:13px;font-weight:600;">'+d+'</label>' +
         '<textarea id="sched_'+DAY_KEYS[d]+'">'+schedText(d)+'</textarea>').join('') +
       '<div style="margin-top:10px;"><button class="btn" onclick="saveSchedule()">Сохранить расписание</button></div></div>';
-    view.innerHTML = WEEK_DAYS.map(day => {
-      const lessons = schedText(day).split('\n').filter(x=>x.trim());
-      return '<table class="schedule" style="margin-bottom:12px;"><tr><th class="day" colspan="2">'+day+'</th></tr>' +
-        lessons.map((s,i)=>'<tr><td style="width:40px;color:#6c737d;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('') +
-        '</table>';
-    }).join('');
   } else {
     editor.style.display = 'none';
-    view.innerHTML = WEEK_DAYS.map(day => {
-      const lessons = schedText(day).split('\n').filter(x=>x.trim());
-      return '<table class="schedule" style="margin-bottom:12px;"><tr><th class="day" colspan="2">'+day+'</th></tr>' +
-        lessons.map((s,i)=>'<tr><td style="width:40px;color:#6c737d;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('') +
-        '</table>';
-    }).join('');
   }
+  view.innerHTML = scheduleTablesHTML();
 }
 function saveSchedule(){
   const obj = {};
@@ -605,7 +607,7 @@ function renderRemarks(){
   const list = REMARKS.slice().sort((a,b)=> new Date(b.date||0) - new Date(a.date||0));
   document.getElementById('remarksList').innerHTML = list.length ? list.map(r =>
     '<div class="card remark-item" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
-    '<div><div class="hw-item meta" style="border:none;font-size:12px;color:#6c737d;margin-bottom:4px;">' +
+    '<div><div class="meta" style="font-size:12px;color:#6c737d;margin-bottom:4px;">' +
       (USERS[r.student]?USERS[r.student].name:r.student)+' · '+(r.date?isoToLabel(r.date):'')+'</div>' +
     '<div style="font-size:14px;">'+r.text+'</div></div>' +
     '<button class="item-x" onclick="deleteRemark(\''+r.id+'\')">✕</button></div>').join('')
