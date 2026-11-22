@@ -80,8 +80,12 @@ table.jgrid { border-collapse:collapse; background:#fff; box-shadow:var(--shadow
   white-space:nowrap; border-right:2px solid #8a8a8a; }
 .jgrid td.avg { background:#f7f9fb; font-weight:700; color:#3c4043; font-size:12px;
   border-left:2px solid #8a8a8a; width:44px; min-width:44px; }
-.jgrid td.mark-cell { cursor:pointer; position:relative; font-weight:700; font-size:14px; color:#000; background:#fff; }
+.jgrid td.mark-cell { cursor:pointer; position:relative; font-weight:700; font-size:14px; }
 .jgrid td.mark-cell:hover, .jgrid td.empty-c:hover { outline:2px solid #0e69d5; outline-offset:-2px; }
+.jgrid td.mark-5 { background:#e6f4ea; color:#137333; }
+.jgrid td.mark-4 { background:#e8f0fe; color:#1967d2; }
+.jgrid td.mark-3 { background:#fef7e0; color:#b06000; }
+.jgrid td.mark-2, .jgrid td.mark-1 { background:#fce8e6; color:#c5221f; }
 .jgrid td.empty-c { color:#dcdcdc; cursor:pointer; font-size:12px; }
 .wbadge { position:absolute; top:0; right:0; background:#0e69d5; color:#fff; font-size:8px;
   min-width:13px; height:13px; border-radius:0 0 0 6px; display:flex; align-items:center; justify-content:center; }
@@ -90,20 +94,10 @@ table.jgrid { border-collapse:collapse; background:#fff; box-shadow:var(--shadow
 .jgrid .cell-input:focus { box-shadow: inset 0 0 0 2px #0e69d5; }
 .journal-meta { font-size:12px; color:#6c737d; margin-top:10px; }
 
-table.pgrid { width:100%; border-collapse:collapse; background:#fff; box-shadow:var(--shadow); }
-.pgrid th, .pgrid td { border:1px solid #eef0f2; padding:8px 10px; font-size:13px; text-align:center; }
-.pgrid th { background:#f7f9fb; font-weight:600; }
-.pgrid td.name { text-align:left; font-weight:600; white-space:nowrap; }
-
-.remark-item { border-left:4px solid #f9ab00; }
-.event-item { border-left:4px solid #137333; }
-.item-x { background:none; border:none; color:#c5221f; cursor:pointer; font-size:16px; font-weight:700; font-family:inherit; }
-
 .hw-item { border-left:4px solid #0e69d5; }
 .hw-item .meta { font-size:12px; color:#6c737d; margin-bottom:4px; }
 .form-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-.form-row input, .form-row select, .form-row textarea, .form-row button { padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; }
-.sched-editor textarea { width:100%; min-height:70px; padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; margin-top:6px; }
+.form-row input, .form-row select, .form-row button { padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; }
 .btn { background:#0e69d5; color:#fff; border:none !important; cursor:pointer; font-weight:600; }
 .btn:hover { background:#0b5bbd; }
 .btn-secondary { background:#e8f0fe; color:#0e69d5; cursor:pointer; font-weight:600; }
@@ -126,7 +120,6 @@ table.pgrid { width:100%; border-collapse:collapse; background:#fff; box-shadow:
 </header>
 
 <main>
-  <!-- ВХОД -->
   <div class="screen" id="screen-login">
     <div class="login-wrap">
       <div class="card">
@@ -140,12 +133,10 @@ table.pgrid { width:100%; border-collapse:collapse; background:#fff; box-shadow:
     </div>
   </div>
 
-  <!-- ДНЕВНИК (ученик) -->
   <div class="screen" id="screen-diary"><h2>Оценки</h2><div id="diaryList"></div></div>
 
-  <!-- ОТМЕТКИ (учитель) -->
   <div class="screen" id="screen-journal">
-    <h2>Отметки</h2>
+    <h2>Журнал</h2>
     <div class="journal-controls">
       <select id="jSubject" onchange="renderJournal()">
         <option>Русский язык</option><option>Математика</option><option>Литер. чтение</option>
@@ -161,21 +152,15 @@ table.pgrid { width:100%; border-collapse:collapse; background:#fff; box-shadow:
     <div class="journal-meta">Клик по клетке — поле ввода. Наберите оценку (2–5) и нажмите Enter. Пустое поле + Enter — удалить. Правый клик — вес оценки.</div>
   </div>
 
-  <!-- РАСПИСАНИЕ -->
-  <div class="screen" id="screen-schedule">
-    <h2>Расписание</h2>
-    <div id="schedTeacherEditor" style="display:none;"></div>
-    <div id="scheduleList"></div>
-  </div>
+  <div class="screen" id="screen-schedule"><h2>Расписание</h2><div id="scheduleList"></div></div>
 
-  <!-- ДОМАШНИЕ ЗАДАНИЯ -->
   <div class="screen" id="screen-homework">
-    <h2>Домашние задания</h2>
+    <h2>Задания</h2>
     <div id="hwTeacherForm" style="display:none;">
       <div class="card">
         <div class="form-row">
           <select id="hwSubject" style="flex:1;">
-            <option>Русский язык</option><option>Математика</option><option>Литер. чтение</option>
+            <option>Русский язык</option><option>Математика</option><option>Литературное чтение</option>
             <option>Окружающий мир</option><option>Физкультура</option><option>Музыка</option>
           </select>
           <input id="hwText" placeholder="Текст задания" style="flex:2;">
@@ -187,40 +172,6 @@ table.pgrid { width:100%; border-collapse:collapse; background:#fff; box-shadow:
     <div id="hwList"></div>
   </div>
 
-  <!-- УСПЕВАЕМОСТЬ (учитель) -->
-  <div class="screen" id="screen-performance">
-    <h2>Успеваемость (итоговые оценки)</h2>
-    <div class="journal-wrap" id="perfTable"></div>
-    <div class="journal-meta">Итоговая считается как средний балл с учётом веса всех оценок по предмету.</div>
-  </div>
-
-  <!-- ЗАМЕЧАНИЯ (учитель) -->
-  <div class="screen" id="screen-remarks">
-    <h2>Замечания</h2>
-    <div class="card">
-      <div class="form-row">
-        <select id="rmStudent" style="flex:1;"></select>
-        <input id="rmText" placeholder="Текст замечания" style="flex:3;">
-        <button class="btn" onclick="addRemark()">Добавить</button>
-      </div>
-    </div>
-    <div id="remarksList"></div>
-  </div>
-
-  <!-- СОБЫТИЯ (учитель) -->
-  <div class="screen" id="screen-events">
-    <h2>События</h2>
-    <div class="card">
-      <div class="form-row">
-        <input id="evTitle" placeholder="Например: Родительское собрание" style="flex:2;">
-        <input id="evDate" type="date" style="flex:1;">
-        <button class="btn" onclick="addEvent()">Добавить</button>
-      </div>
-    </div>
-    <div id="eventsList"></div>
-  </div>
-
-  <!-- ПРОФИЛЬ (ученик) -->
   <div class="screen" id="screen-profile"><h2>Профиль</h2><div class="card" id="profileCard"></div></div>
 </main>
 
@@ -237,11 +188,8 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const gradesRef  = db.ref('grades');
-const hwRef      = db.ref('homework');
-const schedRef   = db.ref('schedule');
-const remarksRef = db.ref('remarks');
-const eventsRef  = db.ref('events');
+const gradesRef = db.ref('grades');
+const hwRef = db.ref('homework');
 
 // ===== ПОЛЬЗОВАТЕЛИ =====
 const STUDENT_NAMES = [
@@ -257,10 +205,10 @@ STUDENT_NAMES.forEach(function(n, i){
   const login = 'student' + (i + 1);
   USERS[login] = { pass: login, role:'student', name: n, klass:'4 «А»' };
 });
-const SUBJECTS = ['Русский язык','Математика','Литер. чтение','Окруж. мир','ИЗО','Труд(технология)','Физкультура','Англ. яз.','Музыка'];
 
 let currentUser = null;
-let GRADES = [], HOMEWORK = [], REMARKS = [], EVENTS = [], SCHED = null;
+let GRADES = [];
+let HOMEWORK = [];
 
 // ===== СИНХРОНИЗАЦИЯ =====
 gradesRef.on('value', snap => {
@@ -268,22 +216,12 @@ gradesRef.on('value', snap => {
   GRADES = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
   renderAll();
 }, err => setDbStatus(false, err));
+
 hwRef.on('value', snap => {
   const val = snap.val() || {};
   HOMEWORK = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
   renderAll();
 });
-remarksRef.on('value', snap => {
-  const val = snap.val() || {};
-  REMARKS = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
-  renderAll();
-});
-eventsRef.on('value', snap => {
-  const val = snap.val() || {};
-  EVENTS = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
-  renderAll();
-});
-schedRef.on('value', snap => { SCHED = snap.val(); renderAll(); });
 
 function setDbStatus(ok, err){
   const el = document.getElementById('dbStatus');
@@ -302,7 +240,6 @@ function doLogin(){
     currentUser = Object.assign({ login:u }, acc);
     sessionStorage.setItem('who', u);
     document.getElementById('loginError').style.display='none';
-    activeTab = currentUser.role === 'teacher' ? 'journal' : 'diary';
     buildUI();
   } else {
     const e = document.getElementById('loginError');
@@ -314,27 +251,14 @@ function logout(){ currentUser=null; sessionStorage.removeItem('who'); buildUI()
 document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
 // ===== ИНТЕРФЕЙС =====
+const TABS = [
+  { id:'diary', label:'Дневник', roles:['student','teacher'] },
+  { id:'journal', label:'Журнал', roles:['teacher'] },
+  { id:'schedule', label:'Расписание', roles:['student','teacher'] },
+  { id:'homework', label:'Задания', roles:['student','teacher'] },
+  { id:'profile', label:'Профиль', roles:['student','teacher'] }
+];
 let activeTab = 'diary';
-
-function currentTabs(){
-  if (!currentUser) return [];
-  if (currentUser.role === 'teacher'){
-    return [
-      { id:'journal',     label:'Отметки' },
-      { id:'schedule',    label:'Расписание' },
-      { id:'homework',    label:'Домашние задания' },
-      { id:'performance', label:'Успеваемость' },
-      { id:'remarks',     label:'Замечания' },
-      { id:'events',      label:'События' }
-    ];
-  }
-  return [
-    { id:'diary',    label:'Дневник' },
-    { id:'schedule', label:'Расписание' },
-    { id:'homework', label:'Задания' },
-    { id:'profile',  label:'Профиль' }
-  ];
-}
 
 function buildUI(){
   const nav = document.getElementById('nav');
@@ -349,8 +273,8 @@ function buildUI(){
     '<div class="avatar">'+currentUser.name.charAt(0)+'</div>' +
     '<span style="font-size:14px;">'+currentUser.name+'</span>' +
     '<button class="btn-secondary" style="border:none;padding:7px 14px;border-radius:8px;" onclick="logout()">Выйти</button>';
-  nav.innerHTML = currentTabs().map(t =>
-    '<button data-tab="'+t.id+'" class="'+(t.id===activeTab?'active':'')+'" onclick="switchTab(\''+t.id+'\')">'+t.label+'</button>').join('');
+  nav.innerHTML = TABS.filter(t=>t.roles.includes(currentUser.role))
+    .map(t => '<button class="'+(t.id===activeTab?'active':'')+'" onclick="switchTab(\''+t.id+'\')">'+t.label+'</button>').join('');
   switchTab(activeTab);
 }
 
@@ -358,9 +282,9 @@ function switchTab(id){
   activeTab = id;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
-  // Обновляем подсветку кнопок меню
-  document.querySelectorAll('nav button').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === id);
+  document.querySelectorAll('nav button').forEach(b=>{
+    const t = TABS.find(x=>x.id===id);
+    b.classList.toggle('active', t && b.textContent.trim() === t.label);
   });
   renderAll();
 }
@@ -375,21 +299,17 @@ function gradeClass(v){ return 'g'+String(v).charAt(0); }
 function toISO(d){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
-function getToday(){ return toISO(new Date()); }
-function studentLoginList(){ return Object.keys(USERS).filter(u=>u.startsWith('student')); }
-function isTeacher(){ return currentUser && currentUser.role==='teacher'; }
 
 function renderAll(){
-  if (!currentUser) return;
-  renderDiary(); renderJournal(); renderSchedule(); renderHomework();
-  renderPerformance(); renderRemarks(); renderEvents(); renderProfile();
+  renderDiary(); renderJournal(); renderSchedule(); renderHomework(); renderProfile();
 }
 
-// ===== ДНЕВНИК (ученик) =====
+// ===== ДНЕВНИК =====
 function renderDiary(){
   const box = document.getElementById('diaryList');
-  if (!currentUser || currentUser.role!=='student') return;
-  const list = GRADES.filter(g => g.student === currentUser.login);
+  if (!currentUser) return;
+  const login = currentUser.role==='student' ? currentUser.login : null;
+  const list = GRADES.filter(g => !login || g.student === login);
   const groups = {};
   list.forEach(g => { const d = g.date || '—'; if (!groups[d]) groups[d] = []; groups[d].push(g); });
   const dates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
@@ -408,7 +328,7 @@ function renderDiary(){
     '</div>').join('');
 }
 
-// ===== ОТМЕТКИ (журнал учителя) =====
+// ===== ЖУРНАЛ =====
 const DAYS = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 function lastWeekdays(n){
   const days = [];
@@ -421,7 +341,7 @@ function lastWeekdays(n){
 }
 
 function renderJournal(){
-  if (!isTeacher()) return;
+  if (!currentUser || currentUser.role!=='teacher') return;
   const dates = lastWeekdays(8);
   const isos = dates.map(toISO);
   const subj = document.getElementById('jSubject').value;
@@ -430,13 +350,13 @@ function renderJournal(){
   dates.forEach(d => html += '<th>'+DAYS[d.getDay()]+'<br>'+d.getDate()+'</th>');
   html += '<th class="avg">Ср.</th></tr>';
 
-  studentLoginList().forEach(stu => {
+  Object.keys(USERS).filter(u=>u.startsWith('student')).forEach(stu => {
     html += '<tr><td class="name">'+USERS[stu].name+'</td>';
     isos.forEach(iso => {
       const g = GRADES.find(x => x.student===stu && x.subject===subj && x.date===iso);
       const cellId = 'c_'+stu+'_'+iso;
       if (g){
-        html += '<td class="mark-cell" id="'+cellId+'" ' +
+        html += '<td class="mark-cell mark-'+String(g.value).charAt(0)+'" id="'+cellId+'" ' +
           'onclick="editCell(\''+stu+'\',\''+iso+'\',\''+g.id+'\')" ' +
           'oncontextmenu="setWeight(event,\''+g.id+'\');return false;">'+g.value+
           (g.weight>1?'<span class="wbadge">'+g.weight+'</span>':'')+'</td>';
@@ -454,6 +374,7 @@ function renderJournal(){
   document.getElementById('journalTable').innerHTML = html;
 }
 
+// Ввод оценки: клик по клетке -> поле ввода на всю клетку -> Enter
 function editCell(student, iso, gradeId){
   const cell = document.getElementById('c_'+student+'_'+iso);
   if (!cell) return;
@@ -513,56 +434,26 @@ function setWeight(e, id){
 }
 
 // ===== РАСПИСАНИЕ =====
-const WEEK_DAYS = ['Понедельник','Вторник','Среда','Четверг','Пятница'];
-const DAY_KEYS = { 'Понедельник':'Mon','Вторник':'Tue','Среда':'Wed','Четверг':'Thu','Пятница':'Fri' };
-const DEFAULT_SCHEDULE = {
-  'Понедельник':'Русский язык\nМатематика\nЛитературное чтение\nФизкультура',
-  'Вторник':'Математика\nОкружающий мир\nРусский язык\nМузыка',
-  'Среда':'Литературное чтение\nРусский язык\nИзобразительное искусство\nТехнология',
-  'Четверг':'Математика\nАнглийский язык\nОкружающий мир\nФизкультура',
-  'Пятница':'Русский язык\nМатематика\nЛитературное чтение\nМузыка'
+const SCHEDULE = {
+  'Понедельник': ['Русский язык','Математика','Литературное чтение','Физкультура'],
+  'Вторник': ['Математика','Окружающий мир','Русский язык','Музыка'],
+  'Среда': ['Литературное чтение','Русский язык','Изобразительное искусство','Технология'],
+  'Четверг': ['Математика','Английский язык','Окружающий мир','Физкультура'],
+  'Пятница': ['Русский язык','Математика','Литературное чтение','Музыка']
 };
-function schedText(day){ return (SCHED && SCHED[day]) ? SCHED[day] : (DEFAULT_SCHEDULE[day] || ''); }
-function scheduleTablesHTML(){
-  return WEEK_DAYS.map(day => {
-    const lessons = schedText(day).split('\n').filter(x=>x.trim());
-    return '<table class="schedule" style="margin-bottom:12px;"><tr><th class="day" colspan="2">'+day+'</th></tr>' +
-      lessons.map((s,i)=>'<tr><td style="width:40px;color:#6c737d;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('') +
-      '</table>';
-  }).join('');
-}
-
 function renderSchedule(){
-  const view = document.getElementById('scheduleList');
-  const editor = document.getElementById('schedTeacherEditor');
-  if (isTeacher()){
-    editor.style.display = 'block';
-    editor.innerHTML = '<div class="card sched-editor"><b>Редактирование расписания</b>' +
-      '<div style="font-size:12px;color:#6c737d;margin:4px 0 8px;">Каждый урок — на новой строке.</div>' +
-      WEEK_DAYS.map(d => '<label style="font-size:13px;font-weight:600;">'+d+'</label>' +
-        '<textarea id="sched_'+DAY_KEYS[d]+'">'+schedText(d)+'</textarea>').join('') +
-      '<div style="margin-top:10px;"><button class="btn" onclick="saveSchedule()">Сохранить расписание</button></div></div>';
-  } else {
-    editor.style.display = 'none';
-  }
-  view.innerHTML = scheduleTablesHTML();
-}
-function saveSchedule(){
-  const obj = {};
-  WEEK_DAYS.forEach(d => { obj[d] = document.getElementById('sched_'+DAY_KEYS[d]).value; });
-  schedRef.set(obj);
+  document.getElementById('scheduleList').innerHTML = Object.keys(SCHEDULE).map(day =>
+    '<table class="schedule" style="margin-bottom:12px;"><tr><th class="day" colspan="2">'+day+'</th></tr>' +
+    SCHEDULE[day].map((s,i)=>'<tr><td style="width:40px;color:#6c737d;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('') +
+    '</table>').join('');
 }
 
-// ===== ДОМАШНИЕ ЗАДАНИЯ =====
+// ===== ЗАДАНИЯ =====
 function renderHomework(){
-  if (!currentUser) return;
-  document.getElementById('hwTeacherForm').style.display = isTeacher() ? 'block':'none';
+  document.getElementById('hwTeacherForm').style.display = currentUser && currentUser.role==='teacher' ? 'block':'none';
   const list = HOMEWORK.slice().sort((a,b)=> new Date(a.due||0) - new Date(b.due||0));
   document.getElementById('hwList').innerHTML = list.length ? list.map(h =>
-    '<div class="card hw-item" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
-    '<div><div class="meta">'+h.subject+(h.due?' · до '+isoToLabel(h.due):'')+'</div>'+h.text+'</div>' +
-    (isTeacher() ? '<button class="item-x" title="Удалить" onclick="deleteHomework(\''+h.id+'\')">✕</button>' : '') +
-    '</div>').join('')
+    '<div class="card hw-item"><div class="meta">'+h.subject+(h.due?' · до '+isoToLabel(h.due):'')+'</div>'+h.text+'</div>').join('')
     : '<div class="empty">Заданий нет</div>';
 }
 function addHomework(){
@@ -573,78 +464,10 @@ function addHomework(){
   hwRef.push({ subject:subj, text:text, due:due||null });
   document.getElementById('hwText').value='';
 }
-function deleteHomework(id){ hwRef.child(id).remove(); }
-
-// ===== УСПЕВАЕМОСТЬ =====
-function renderPerformance(){
-  if (!isTeacher()) return;
-  let html = '<table class="pgrid"><tr><th style="text-align:left;">Ученик</th>' +
-    SUBJECTS.map(s=>'<th>'+s+'</th>').join('') + '</tr>';
-  studentLoginList().forEach(stu => {
-    html += '<tr><td class="name">'+USERS[stu].name+'</td>';
-    SUBJECTS.forEach(subj => {
-      const list = GRADES.filter(x => x.student===stu && x.subject===subj);
-      let sum=0, w=0;
-      list.forEach(g => { const v = parseFloat(g.value); if (!isNaN(v)) { sum += v*(g.weight||1); w += (g.weight||1); } });
-      html += '<td>'+(w ? Math.round(sum/w) : '—')+'</td>';
-    });
-    html += '</tr>';
-  });
-  html += '</table>';
-  document.getElementById('perfTable').innerHTML = html;
-}
-
-// ===== ЗАМЕЧАНИЯ =====
-function fillRemarkStudents(){
-  const sel = document.getElementById('rmStudent');
-  if (!sel.options.length){
-    sel.innerHTML = studentLoginList().map(s=>'<option value="'+s+'">'+USERS[s].name+'</option>').join('');
-  }
-}
-function renderRemarks(){
-  if (!isTeacher()) return;
-  fillRemarkStudents();
-  const list = REMARKS.slice().sort((a,b)=> new Date(b.date||0) - new Date(a.date||0));
-  document.getElementById('remarksList').innerHTML = list.length ? list.map(r =>
-    '<div class="card remark-item" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
-    '<div><div class="meta" style="font-size:12px;color:#6c737d;margin-bottom:4px;">' +
-      (USERS[r.student]?USERS[r.student].name:r.student)+' · '+(r.date?isoToLabel(r.date):'')+'</div>' +
-    '<div style="font-size:14px;">'+r.text+'</div></div>' +
-    '<button class="item-x" onclick="deleteRemark(\''+r.id+'\')">✕</button></div>').join('')
-    : '<div class="empty">Замечаний нет</div>';
-}
-function addRemark(){
-  const text = document.getElementById('rmText').value.trim();
-  const stu = document.getElementById('rmStudent').value;
-  if (!text || !stu) return;
-  remarksRef.push({ student:stu, text:text, date:getToday() });
-  document.getElementById('rmText').value='';
-}
-function deleteRemark(id){ remarksRef.child(id).remove(); }
-
-// ===== СОБЫТИЯ =====
-function renderEvents(){
-  if (!isTeacher()) return;
-  const list = EVENTS.slice().sort((a,b)=> new Date(a.date||0) - new Date(b.date||0));
-  document.getElementById('eventsList').innerHTML = list.length ? list.map(e =>
-    '<div class="card event-item" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
-    '<div><div class="meta" style="font-size:12px;color:#6c737d;margin-bottom:4px;">'+(e.date?isoToLabel(e.date):'')+'</div>' +
-    '<div style="font-size:14px;font-weight:600;">'+e.title+'</div></div>' +
-    '<button class="item-x" onclick="deleteEvent(\''+e.id+'\')">✕</button></div>').join('')
-    : '<div class="empty">Событий нет</div>';
-}
-function addEvent(){
-  const title = document.getElementById('evTitle').value.trim();
-  const date = document.getElementById('evDate').value;
-  if (!title) return;
-  eventsRef.push({ title:title, date:date||null });
-  document.getElementById('evTitle').value='';
-}
-function deleteEvent(id){ eventsRef.child(id).remove(); }
 
 // ===== ПРОФИЛЬ =====
 function renderProfile(){
-  if (!currentUser || currentUser.role!=='student') return;
+  if (!currentUser) return;
   document.getElementById('profileCard').innerHTML =
     '<div style="display:flex;align-items:center;gap:16px;">' +
     '<div class="avatar" style="width:64px;height:64px;font-size:26px;">'+currentUser.name.charAt(0)+'</div>' +
