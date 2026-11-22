@@ -3,33 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Моя школа | Электронный дневник</title>
+<title>Школьный журнал</title>
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root {
-  --shadow: 0 1px 3px rgba(0,0,0,.08);
-}
+:root { --shadow: 0 1px 3px rgba(0,0,0,.08); --border-color: #b8b8b8; }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Golos Text', -apple-system, sans-serif; background:#f0f2f5; color:#1a1a1a; padding-bottom:40px; }
 
-header {
-  background:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between;
-  box-shadow:0 1px 4px rgba(0,0,0,.08); position:sticky; top:0; z-index:100; flex-wrap:wrap; gap:8px;
-}
-.logo-area { display:flex; align-items:center; gap:12px; }
+header { background:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 1px 4px rgba(0,0,0,.08); position:sticky; top:0; z-index:100; flex-wrap:wrap; gap:8px; }
 .logo-area img { height:34px; width:auto; display:block; }
-.logo-text { display:flex; align-items:center; gap:8px; }
-.logo-text .t1 { font-size:18px; font-weight:700; color:#0e69d5; line-height:1.2; white-space:nowrap; }
-.logo-text .t2 { font-size:14px; color:#6c737d; line-height:1.2; white-space:nowrap; }
 
 nav { display:flex; gap:4px; flex-wrap:wrap; }
-nav button {
-  border:none; background:transparent; padding:8px 14px; border-radius:8px; cursor:pointer;
-  font-family:inherit; font-size:14px; color:#3c4043; display:flex; align-items:center; gap:6px;
-}
+nav button { border:none; background:transparent; padding:8px 14px; border-radius:8px; cursor:pointer;
+  font-family:inherit; font-size:14px; color:#3c4043; }
 nav button:hover { background:#f1f3f4; }
 nav button.active { background:#e8f0fe; color:#0e69d5; font-weight:600; }
 
@@ -40,36 +30,28 @@ nav button.active { background:#e8f0fe; color:#0e69d5; font-weight:600; }
 .db-ok { background:#e6f4ea; color:#137333; }
 .db-bad { background:#fce8e6; color:#c5221f; }
 
-main { max-width:760px; margin:24px auto; padding:0 16px; }
+main { max-width:1200px; margin:24px auto; padding:0 16px; }
 .screen { display:none; }
 .screen.active { display:block; }
 h2 { font-size:20px; margin-bottom:16px; font-weight:600; }
 
-.date-pill {
-  text-align:center; margin:20px auto 10px; padding:5px 16px; background:#e9edf2; border-radius:20px;
-  color:#5f6368; font-size:13px; font-weight:500; width:fit-content;
-}
+.date-pill { text-align:center; margin:20px auto 10px; padding:5px 16px; background:#e9edf2; border-radius:20px;
+  color:#5f6368; font-size:13px; font-weight:500; width:fit-content; }
 .day-card { background:#fff; border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
-.grade-row { display:flex; align-items:center; padding:14px 18px; gap:16px; cursor:pointer; }
+.grade-row { display:flex; align-items:center; padding:14px 18px; gap:16px; }
 .grade-row + .grade-row { border-top:1px solid #eef0f2; }
-.grade-row:hover { background:#fafbfc; }
-.grade-box {
-  min-width:40px; height:40px; border-radius:10px; background:#eef1f5; color:#1a1a1a;
+.grade-box { min-width:40px; height:40px; border-radius:10px; color:#1a1a1a; background:#eef1f5;
   display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px;
-  position:relative; flex-shrink:0; padding:0 6px;
-}
+  position:relative; flex-shrink:0; padding:0 6px; }
 .g5 { background:#e6f4ea; color:#137333; }
 .g4 { background:#e8f0fe; color:#1967d2; }
 .g3 { background:#fef7e0; color:#b06000; }
-.g2 { background:#fce8e6; color:#c5221f; }
-.g1 { background:#fce8e6; color:#c5221f; }
-.weight-badge {
-  position:absolute; bottom:-6px; right:-6px; background:#0e69d5; color:#fff; font-size:10px;
+.g2, .g1 { background:#fce8e6; color:#c5221f; }
+.weight-badge { position:absolute; bottom:-6px; right:-6px; background:#0e69d5; color:#fff; font-size:10px;
   min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center;
-  padding:0 4px; font-weight:600; border:2px solid #fff;
-}
+  padding:0 4px; font-weight:600; border:2px solid #fff; }
 .grade-info { flex-grow:1; min-width:0; }
-.subj { font-size:15px; font-weight:700; line-height:1.3; }
+.subj { font-size:15px; font-weight:700; }
 .wtype { font-size:13px; color:#6c737d; margin-top:3px; }
 .arrow { color:#9aa0a6; font-size:20px; flex-shrink:0; }
 
@@ -82,34 +64,40 @@ table.schedule { width:100%; border-collapse:collapse; background:#fff; border-r
 .schedule .day { font-weight:700; color:#0e69d5; white-space:nowrap; }
 
 .journal-controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:14px; }
-.journal-controls select, .journal-controls input {
-  padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; background:#fff;
-}
+.journal-controls select { padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; background:#fff; }
 .journal-wrap { overflow-x:auto; }
-table.jgrid { width:100%; border-collapse:collapse; background:#fff; border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
-.jgrid th, .jgrid td { border:1px solid #eef0f2; text-align:center; font-size:13px; padding:0; }
-.jgrid th { background:#137333; color:#fff; font-weight:500; padding:6px 4px; }
-.jgrid th.name-h { text-align:left; padding-left:10px; }
-.jgrid .name { background:#f7f9fb; font-weight:600; padding:0 10px; text-align:left; white-space:nowrap; height:40px; }
-.jgrid .cell {
-  width:36px; height:40px; cursor:pointer; font-weight:600;
-  display:flex; align-items:center; justify-content:center; position:relative;
+
+/* ===== ЖУРНАЛ: клетки 32x32, как в Excel ===== */
+table.jgrid { border-collapse:collapse; background:#fff; box-shadow:var(--shadow); table-layout:fixed; }
+.jgrid th, .jgrid td {
+  border: 1px solid var(--border-color);
+  text-align:center; vertical-align:middle;
+  padding: 0; height: 32px;
 }
-.jgrid .cell:hover { outline:2px solid #0e69d5; outline-offset:-2px; }
-.jgrid .cell.empty-c { color:#c3c8ce; }
-.jgrid .avg { background:#f7f9fb; font-weight:700; color:#3c4043; }
-.jgrid .cell-input {
-  width:100%; height:40px; border:none; text-align:center; font-size:15px; font-weight:700;
-  font-family:inherit; background:rgba(255,255,255,0.95); outline:2px solid #0e69d5; outline-offset:-2px;
-}
-.journal-meta { font-size:12px; color:#6c737d; margin-top:10px; line-height:1.6; }
+.jgrid th { background:#f7f9fb; color:#3c4043; font-weight:600; font-size:11px; width:32px; }
+.jgrid th.name-h { text-align:left; padding-left:10px; width:150px; min-width:150px; background:#fff; border-right:2px solid #8a8a8a; }
+.jgrid td.name { background:#fff; font-weight:600; font-size:12px; padding-left:10px; text-align:left;
+  white-space:nowrap; border-right:2px solid #8a8a8a; }
+.jgrid td.avg { background:#f7f9fb; font-weight:700; color:#3c4043; font-size:12px;
+  border-left:2px solid #8a8a8a; width:44px; min-width:44px; }
+.jgrid td.mark-cell { cursor:pointer; position:relative; font-weight:700; font-size:14px; }
+.jgrid td.mark-cell:hover, .jgrid td.empty-c:hover { outline:2px solid #0e69d5; outline-offset:-2px; }
+.jgrid td.mark-5 { background:#e6f4ea; color:#137333; }
+.jgrid td.mark-4 { background:#e8f0fe; color:#1967d2; }
+.jgrid td.mark-3 { background:#fef7e0; color:#b06000; }
+.jgrid td.mark-2, .jgrid td.mark-1 { background:#fce8e6; color:#c5221f; }
+.jgrid td.empty-c { color:#dcdcdc; cursor:pointer; font-size:12px; }
+.wbadge { position:absolute; top:0; right:0; background:#0e69d5; color:#fff; font-size:8px;
+  min-width:13px; height:13px; border-radius:0 0 0 6px; display:flex; align-items:center; justify-content:center; }
+.jgrid .cell-input { width:100%; height:100%; border:none; text-align:center; font-size:14px; font-weight:700;
+  font-family:inherit; background:#fff; outline:none; padding:0; }
+.jgrid .cell-input:focus { box-shadow: inset 0 0 0 2px #0e69d5; }
+.journal-meta { font-size:12px; color:#6c737d; margin-top:10px; }
 
 .hw-item { border-left:4px solid #0e69d5; }
 .hw-item .meta { font-size:12px; color:#6c737d; margin-bottom:4px; }
 .form-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-.form-row input, .form-row select, .form-row button {
-  padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px;
-}
+.form-row input, .form-row select, .form-row button { padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; }
 .btn { background:#0e69d5; color:#fff; border:none !important; cursor:pointer; font-weight:600; }
 .btn:hover { background:#0b5bbd; }
 .btn-secondary { background:#e8f0fe; color:#0e69d5; cursor:pointer; font-weight:600; }
@@ -126,17 +114,12 @@ table.jgrid { width:100%; border-collapse:collapse; background:#fff; border-radi
 <header>
   <div class="logo-area">
     <img src="https://gu-st.ru/epgu-app-school-st/assets/svg/logo-big.svg" alt="" onerror="this.style.display='none'">
-    <div class="logo-text">
-      <span class="t1">МОЯ ШКОЛА</span>
-      <span class="t2">| ЭЛЕКТРОННЫЙ ДНЕВНИК</span>
-    </div>
   </div>
   <nav id="nav"></nav>
   <div class="user-box" id="userBox"></div>
 </header>
 
 <main>
-  <!-- ВХОД -->
   <div class="screen" id="screen-login">
     <div class="login-wrap">
       <div class="card">
@@ -150,10 +133,8 @@ table.jgrid { width:100%; border-collapse:collapse; background:#fff; border-radi
     </div>
   </div>
 
-  <!-- ДНЕВНИК -->
   <div class="screen" id="screen-diary"><h2>Оценки</h2><div id="diaryList"></div></div>
 
-  <!-- ЖУРНАЛ (учитель) -->
   <div class="screen" id="screen-journal">
     <h2>Журнал</h2>
     <div class="journal-controls">
@@ -168,13 +149,11 @@ table.jgrid { width:100%; border-collapse:collapse; background:#fff; border-radi
       </select>
     </div>
     <div class="journal-wrap" id="journalTable"></div>
-    <div class="journal-meta">Клик по клетке — появляется поле ввода. Наберите оценку (2–5) и нажмите Enter. Пустое поле + Enter — удалить оценку. Правый клик по клетке — изменить вес.</div>
+    <div class="journal-meta">Клик по клетке — поле ввода. Наберите оценку (2–5) и нажмите Enter. Пустое поле + Enter — удалить. Правый клик — вес оценки.</div>
   </div>
 
-  <!-- РАСПИСАНИЕ -->
   <div class="screen" id="screen-schedule"><h2>Расписание</h2><div id="scheduleList"></div></div>
 
-  <!-- ЗАДАНИЯ -->
   <div class="screen" id="screen-homework">
     <h2>Задания</h2>
     <div id="hwTeacherForm" style="display:none;">
@@ -193,12 +172,11 @@ table.jgrid { width:100%; border-collapse:collapse; background:#fff; border-radi
     <div id="hwList"></div>
   </div>
 
-  <!-- ПРОФИЛЬ -->
   <div class="screen" id="screen-profile"><h2>Профиль</h2><div class="card" id="profileCard"></div></div>
 </main>
 
 <script>
-// ===== FIREBASE (конфиг вставлен) =====
+// ===== FIREBASE =====
 const firebaseConfig = {
   apiKey: "AIzaSyCw3RLQB_6HcOT8odym-CDGx4MQL5OT9Kw",
   authDomain: "school-f7fdd.firebaseapp.com",
@@ -232,7 +210,7 @@ let currentUser = null;
 let GRADES = [];
 let HOMEWORK = [];
 
-// ===== СИНХРОНИЗАЦИЯ С БАЗОЙ =====
+// ===== СИНХРОНИЗАЦИЯ =====
 gradesRef.on('value', snap => {
   const val = snap.val() || {};
   GRADES = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
@@ -305,12 +283,13 @@ function switchTab(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
   document.querySelectorAll('nav button').forEach(b=>{
-    b.classList.toggle('active', b.textContent.trim() === TABS.find(t=>t.id===id).label);
+    const t = TABS.find(x=>x.id===id);
+    b.classList.toggle('active', t && b.textContent.trim() === t.label);
   });
   renderAll();
 }
 
-// ===== РЕНДЕР =====
+// ===== ОБЩЕЕ =====
 const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
 function isoToLabel(iso){
   const d = new Date(iso);
@@ -330,9 +309,9 @@ function renderDiary(){
   const box = document.getElementById('diaryList');
   if (!currentUser) return;
   const login = currentUser.role==='student' ? currentUser.login : null;
-  let list = GRADES.filter(g => !login || g.student === login);
+  const list = GRADES.filter(g => !login || g.student === login);
   const groups = {};
-  list.forEach(g => { const d = g.date || '—'; (groups[d] = groups[d] || []).push(g); });
+  list.forEach(g => { const d = g.date || '—'; if (!groups[d]) groups[d] = []; groups[d].push(g); });
   const dates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
   if (!dates.length){ box.innerHTML = '<div class="empty">Оценок пока нет</div>'; return; }
   box.innerHTML = dates.map(d =>
@@ -366,21 +345,24 @@ function renderJournal(){
   const dates = lastWeekdays(8);
   const isos = dates.map(toISO);
   const subj = document.getElementById('jSubject').value;
-  let html = '<table class="jgrid"><tr><th class="name-h" style="min-width:150px;">Ученик</th>';
+
+  let html = '<table class="jgrid"><tr><th class="name-h">Ученик</th>';
   dates.forEach(d => html += '<th>'+DAYS[d.getDay()]+'<br>'+d.getDate()+'</th>');
-  html += '<th style="min-width:44px;">Сред.</th></tr>';
+  html += '<th class="avg">Ср.</th></tr>';
+
   Object.keys(USERS).filter(u=>u.startsWith('student')).forEach(stu => {
     html += '<tr><td class="name">'+USERS[stu].name+'</td>';
     isos.forEach(iso => {
       const g = GRADES.find(x => x.student===stu && x.subject===subj && x.date===iso);
+      const cellId = 'c_'+stu+'_'+iso;
       if (g){
-        html += '<td><div class="cell '+gradeClass(g.value)+'" id="cell_'+stu+'_'+iso+'" ' +
+        html += '<td class="mark-cell mark-'+String(g.value).charAt(0)+'" id="'+cellId+'" ' +
           'onclick="editCell(\''+stu+'\',\''+iso+'\',\''+g.id+'\')" ' +
           'oncontextmenu="setWeight(event,\''+g.id+'\');return false;">'+g.value+
-          (g.weight>1?'<span class="weight-badge">'+g.weight+'</span>':'')+'</div></td>';
+          (g.weight>1?'<span class="wbadge">'+g.weight+'</span>':'')+'</td>';
       } else {
-        html += '<td><div class="cell empty-c" id="cell_'+stu+'_'+iso+'" ' +
-          'onclick="editCell(\''+stu+'\',\''+iso+'\',null)">·</div></td>';
+        html += '<td class="empty-c" id="'+cellId+'" ' +
+          'onclick="editCell(\''+stu+'\',\''+iso+'\',null)">·</td>';
       }
     });
     const list = GRADES.filter(x => x.student===stu && x.subject===subj && isos.indexOf(x.date) > -1);
@@ -392,9 +374,9 @@ function renderJournal(){
   document.getElementById('journalTable').innerHTML = html;
 }
 
-// Ввод оценки: клик по клетке -> поле ввода -> Enter
+// Ввод оценки: клик по клетке -> поле ввода на всю клетку -> Enter
 function editCell(student, iso, gradeId){
-  const cell = document.getElementById('cell_'+student+'_'+iso);
+  const cell = document.getElementById('c_'+student+'_'+iso);
   if (!cell) return;
   const existing = gradeId ? GRADES.find(g=>g.id===gradeId) : null;
   cell.innerHTML = '';
