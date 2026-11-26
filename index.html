@@ -53,27 +53,20 @@ body { font-family:'Golos Text', Arial, sans-serif; background:#f2f4f7; color:#2
 #screen-app { display:none; }
 #screen-app.active { display:block; }
 
-/* ШАПКА ПРОФИЛЯ: только имя и аватар */
-.topbar { background:#fff; padding:12px 16px; position:relative; }
-.userbox { margin-left:auto; display:flex; align-items:center; justify-content:flex-end; gap:8px;
+/* ШАПКА ПРОФИЛЯ: АВАТАРКА ТОЛЬКО ЗДЕСЬ */
+.topbar { background:#fff; padding:10px 16px; position:relative; }
+.userbox { margin-left:auto; display:flex; align-items:center; justify-content:flex-end; gap:10px;
   color:#2c3e50; font-size:13px; font-weight:500; }
-.userbox .avatar { width:32px; height:32px; border-radius:50%; background:#8e44ad; color:#fff;
+.userbox .avatar { width:32px; height:32px; border-radius:50%; color:#fff;
   display:flex; align-items:center; justify-content:center; font-weight:700; }
 .userbox button { background:transparent; border:1px solid #bdc3c7; color:#2c3e50;
-  padding:4px 10px; border-radius:4px; cursor:pointer; font-family:inherit; font-size:12px; }
+  padding:5px 12px; border-radius:4px; cursor:pointer; font-family:inherit; font-size:12px; }
 .db-status { font-size:11px; padding:3px 8px; border-radius:10px; }
 .db-ok { background:#2e5c2e; color:#cfe8cf; }
 .db-bad { background:#7a2a2a; color:#ffd9d9; }
 
-/* СТРОКА ГЛАВНЫХ ВКЛАДОК — ПОД ШАПКОЙ ПРОФИЛЯ */
-.mainnav {
-  background:#fff;
-  display:flex;
-  justify-content:flex-end;
-  gap:4px;
-  flex-wrap:wrap;
-  padding:0 16px;
-}
+/* СТРОКА ГЛАВНЫХ ВКЛАДОК */
+.mainnav { background:#fff; display:flex; justify-content:flex-end; gap:4px; flex-wrap:wrap; padding:0 16px; }
 .mainnav button {
   background:transparent; border:none; color:#555; font-family:inherit;
   font-size:14px; font-weight:500; padding:8px 16px; cursor:pointer;
@@ -82,29 +75,15 @@ body { font-family:'Golos Text', Arial, sans-serif; background:#f2f4f7; color:#2
 .mainnav button:hover { color:#2f6db5; }
 .mainnav button.active { color:#2f6db5; font-weight:600; }
 
-/* ВТОРАЯ СТРОКА: по центру; у выбранной — серая линия под текстом */
+/* ВТОРАЯ СТРОКА */
 .subbar {
-  background:#fff;
-  display:flex;
-  justify-content:center;
-  gap:2px;
-  padding:0 16px 6px;
-  flex-wrap:wrap;
-  border-bottom:1px solid #dcdcdc;
-  margin-bottom:8px;
+  background:#fff; display:flex; justify-content:center; gap:2px; padding:0 16px 6px;
+  flex-wrap:wrap; border-bottom:1px solid #dcdcdc; margin-bottom:8px;
 }
 .subbar button {
-  background:transparent;
-  border:none;
-  border-bottom:2px solid transparent;
-  color:#555;
-  font-family:inherit;
-  font-size:14px;
-  font-weight:500;
-  padding:5px 16px 3px;
-  cursor:pointer;
-  border-radius:0;
-  transition:color .15s ease, border-color .15s ease;
+  background:transparent; border:none; border-bottom:2px solid transparent; color:#555;
+  font-family:inherit; font-size:14px; font-weight:500; padding:5px 16px 3px; cursor:pointer;
+  border-radius:0; transition:color .15s ease, border-color .15s ease;
 }
 .subbar button:hover { color:#2f6db5; }
 .subbar button.on { color:#2f6db5; font-weight:600; border-bottom:2px solid #c9c9c9; }
@@ -171,7 +150,6 @@ table.jgrid { border-collapse:collapse; background:#fff; }
 .jgrid select { width:100%; height:100%; border:2px solid #137333; font-family:inherit; font-size:10px; }
 .journal-meta { font-size:12px; color:#777; margin-top:8px; }
 
-/* МЕНЮ ПО ПРАВОМУ КЛИКУ */
 #cellMenu { display:none; position:fixed; z-index:1000; background:#fff; border:1px solid #c8c8c8;
   border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.15); overflow:hidden; min-width:180px; }
 #cellMenu .cmi { padding:8px 14px; font-size:13px; cursor:pointer; color:#2c3e50; }
@@ -182,21 +160,28 @@ table.jgrid { border-collapse:collapse; background:#fff; }
 .card { background:#fff; border:1px solid #dcdcdc; border-radius:8px; padding:16px; margin-bottom:10px; }
 .empty { text-align:center; color:#999; padding:36px 16px; font-size:14px; }
 
-table.hwgrid { border-collapse:collapse; margin:0 auto; }
-.hwgrid th { background:#f4f4f4; font-weight:600; font-size:13px; padding:8px 14px; border:1px solid #c9c9c9; }
-.hwgrid td { border:1px solid #c9c9c9; padding:4px; text-align:center; vertical-align:middle; }
-.hwgrid td.datecell-td { width:44px; min-width:44px; }
-.hw-datecell { width:32px; height:32px; border:1px solid #c9c9c9; border-radius:4px;
-  display:flex; align-items:center; justify-content:center; flex-direction:column;
-  font-size:10px; font-weight:600; color:#444; background:#fafafa; margin:0 auto; padding:1px; line-height:1.1; }
-.hw-datecell.sel { background:#2f6db5; color:#fff; }
-.hwgrid input { width:420px; max-width:60vw; padding:8px 10px; border:1px solid #c8c8c8;
-  border-radius:4px; font-family:inherit; font-size:14px; }
-.hwgrid input.saved { border-color:#2e7d32; background:#f2f9f0; }
+/* ===== Д/З УЧИТЕЛЯ: ДАТЫ + СТРОКИ (КОМПАКТНО) ===== */
+table.hw-long { border-collapse:collapse; background:#fff; }
+.hw-long th { background:#f4f4f4; font-weight:600; font-size:12px; padding:5px 10px;
+  border:1px solid #c9c9c9; text-align:center; }
+.hw-long td { border:1px solid #dcdcdc; vertical-align:middle; }
+.hw-long td.datecell { width:78px; min-width:78px; max-width:78px; text-align:center;
+  background:#fafafa; padding:4px 3px; }
+.hw-datebox { display:inline-block; min-width:48px; padding:3px 3px; border-radius:5px; line-height:1.15; }
+.hw-datebox .day-name { display:block; font-size:9px; color:#777; text-transform:uppercase;
+  letter-spacing:1px; font-weight:600; }
+.hw-datebox .day-num { display:block; font-size:15px; font-weight:700; color:#2c3e50; margin-top:1px; }
+.hw-datebox.today { background:#eef4fb; }
+.hw-datebox.today .day-num, .hw-datebox.today .day-name { color:#2f6db5; }
+.hw-long td.inputcell { padding:0; }
+.hw-long td.inputcell input { width:100%; min-width:340px; border:none; padding:7px 10px;
+  font-family:inherit; font-size:13px; outline:none; background:transparent; }
+.hw-long td.inputcell input:focus { background:#f9fbfd; box-shadow:inset 0 0 0 2px #2f6db5; }
+.hw-long td.inputcell input.saved { background:#f2f9f0; box-shadow:inset 0 0 0 2px #2e7d32; }
+
 .blue-btn2 { background:#2f6db5; color:#fff; border:1px solid #2a5f9e; cursor:pointer;
   font-weight:600; padding:8px 12px; border-radius:4px; font-family:inherit; }
-.hw-item { border-left:4px solid #2f6db5; }
-.hw-item .meta { font-size:12px; color:#777; margin-bottom:4px; }
+.blue-btn2:disabled { opacity:.6; cursor:default; }
 
 table.pgrid { width:100%; border-collapse:collapse; border:1px solid #c9c9c9; }
 .pgrid th, .pgrid td { border:1px solid #dcdcdc; padding:7px 9px; font-size:13px; text-align:center; }
@@ -270,15 +255,13 @@ table.schedule { width:100%; border-collapse:collapse; border:1px solid #dcdcdc;
 
 <!-- ПРИЛОЖЕНИЕ -->
 <div id="screen-app">
-  <!-- ШАПКА ПРОФИЛЯ -->
+  <!-- ШАПКА ПРОФИЛЯ: АВАТАРКА ЗДЕСЬ -->
   <div class="topbar">
     <div class="userbox" id="userBox"></div>
   </div>
 
-  <!-- СТРОКА ВКЛАДОК — ПОД ШАПКОЙ ПРОФИЛЯ -->
   <nav class="mainnav" id="nav"></nav>
 
-  <!-- Кнопки журнала: по центру, включая «Онлайн-уроки» -->
   <div class="subbar" id="subbar" style="display:none;">
     <button data-sub="marks" class="on" onclick="subAction('marks')">Отметки</button>
     <button data-sub="homework" onclick="subAction('homework')">Домашние задания</button>
@@ -312,13 +295,18 @@ table.schedule { width:100%; border-collapse:collapse; border:1px solid #dcdcdc;
       <div class="lesson-name" id="lessonName2"></div>
       <div class="subj-btns" id="subjBtns2"></div>
       <div id="hwTeacherForm" style="display:none;">
-        <h3 style="margin:6px 0 8px;">Задать Д/З на неделю</h3>
-        <div style="margin-bottom:10px;">
+        <div class="weeknav">
+          <button onclick="weekShift(-28)">‹‹</button><button onclick="weekShift(-7)">‹</button>
+          <span class="wk-label" id="hwWeekLabel"></span>
+          <button onclick="weekShift(7)">›</button><button onclick="weekShift(28)">››</button>
+          <button onclick="weekGoToday()">Сегодня</button>
+        </div>
+        <div style="margin-bottom:8px;">
           <button class="blue-btn2" id="hwSaveBtn" onclick="saveAllHW()">Сохранить Д/З</button>
           <span id="hwSaveInfo" style="font-size:13px;color:#777;margin-left:8px;"></span>
         </div>
         <div class="tablewrap" id="hwTable"></div>
-        <div style="font-size:12px;color:#777;margin-top:6px;">Кнопка сохраняет все поля в выбранный предмет. Также всё сохраняется само при наборе.</div>
+        <div style="font-size:12px;color:#777;margin-top:6px;">Текст сохраняется сам через полсекунды после набора. Кнопка «Сохранить Д/З» — всё сразу.</div>
       </div>
       <div id="hwList"></div>
     </div>
@@ -339,7 +327,6 @@ table.schedule { width:100%; border-collapse:collapse; border:1px solid #dcdcdc;
   </main>
 </div>
 
-<!-- МЕНЮ ПО ПРАВОМУ КЛИКУ -->
 <div id="cellMenu"></div>
 
 <script>
@@ -360,7 +347,7 @@ const typesRef = db.ref('types');
 const schedRef = db.ref('schedule');
 
 function safeKey(str){
-  return (str||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  return (str||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-zа-яё0-9_]/g,'');
 }
 
 const SCHOOL_NAME = 'МБОУ СОШ "Школа №34 имени А. С. Пушкина города Монск"';
@@ -392,6 +379,7 @@ STUDENT_NAMES.forEach(function(n,i){
 
 let currentUser=null, GRADES=[], HW={}, TYPES={}, SCHED=null;
 let weekStart=null, curSubject=SUBJECTS[0], activeTab='diary', curSub='marks';
+let hwInfoHold=false;
 
 gradesRef.on('value', s=>{ const v=s.val()||{}; GRADES=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAll(); });
 hwRef.on('value', s=>{ HW=s.val()||{}; renderAll(); });
@@ -430,7 +418,13 @@ function firstName(full){
   const parts=(full||'').trim().split(/\s+/);
   return parts.length>1 ? parts[1] : parts[0];
 }
-
+/* Буква аватарки — первая буква фамилии (у учителя «Токарев», у ученика «Смирнов») */
+function avInitial(full){
+  const p=(full||'').trim().split(/\s+/);
+  if(p.length>=3) return p[0].charAt(0);
+  if(p.length===2) return p[1].charAt(0);
+  return (full||'?').charAt(0);
+}
 function doLogin(){
   const u=document.getElementById('loginUser').value.trim();
   const p=document.getElementById('loginPass').value.trim();
@@ -489,8 +483,10 @@ function buildUI(){
   const nav=document.getElementById('nav');
   const box=document.getElementById('userBox');
   const subbar=document.getElementById('subbar');
+  /* АВАТАРКА — ТОЛЬКО В ШАПКЕ, У ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ */
   box.innerHTML='<span class="db-status db-ok" id="dbStatus">База подключена</span>'+
-    '<div class="avatar">'+currentUser.name.charAt(0)+'</div><span>'+currentUser.name+'</span>'+
+    '<div class="avatar" style="background:#8e44ad;">'+avInitial(currentUser.name)+'</div>'+
+    '<span>'+currentUser.name+'</span>'+
     '<button onclick="logout()">Выйти</button>';
   const tabs = currentUser.role==='teacher' ? teacherTabs() : studentTabs();
   nav.innerHTML=tabs.map(t=>'<button data-tab="'+t[0]+'" class="'+(t[0]===activeTab?'active':'')+
@@ -592,8 +588,8 @@ function actionTodayHW(){
 
 // ===== ЖУРНАЛ =====
 function weekShift(d){ if(!weekStart) weekStart=monday(new Date());
-  weekStart.setDate(weekStart.getDate()+d); renderJournal(); }
-function weekGoToday(){ weekStart=monday(new Date()); renderJournal(); }
+  weekStart.setDate(weekStart.getDate()+d); renderJournal(); renderHomework(); }
+function weekGoToday(){ weekStart=monday(new Date()); renderJournal(); renderHomework(); }
 
 function clearHl(){ document.querySelectorAll('.jgrid .hl').forEach(e=>e.classList.remove('hl')); }
 function highlightCross(cell){
@@ -665,6 +661,7 @@ function renderJournal(){
   html+='<th></th></tr></thead><tbody>';
   students().forEach((stu,i)=>{
     const zc = (i%2===1) ? ' class="z"' : '';
+    /* ПОЛНОЕ ИМЯ БЕЗ АВАТАРКИ */
     html+='<tr'+zc+'><td class="num">'+(i+1)+'.</td><td class="name">'+USERS[stu].name+'</td>';
     isos.forEach(isoD=>{
       const g=findGrade(stu,isoD);
@@ -866,27 +863,45 @@ function updateHwSaveLabel(){
   const info=document.getElementById('hwSaveInfo');
   if(!btn) return;
   btn.textContent='Сохранить Д/З: '+curSubject;
-  if(info) info.textContent='';
+  if(info && !hwInfoHold) info.textContent='';
 }
 function saveAllHW(){
+  const btn=document.getElementById('hwSaveBtn');
+  const info=document.getElementById('hwSaveInfo');
   const inputs=document.querySelectorAll('#hwTable input.hw-in');
-  let n=0;
+  const obj={};
   inputs.forEach(function(inp){
-    const subj=inp.dataset.subj;
     const isoD=inp.dataset.date;
-    if(subj!==curSubject) return;
     const v=(inp.value||'').trim();
-    if(v) hwRef.child(safeKey(subj)).child(isoD).set(v);
-    else hwRef.child(safeKey(subj)).child(isoD).remove();
+    const tk=safeKey(curSubject)+'|'+isoD;
+    clearTimeout(hwTimers[tk]);
+    obj[isoD]=v;
     inp.classList.add('saved');
     setTimeout(function(){ inp.classList.remove('saved'); }, 1200);
-    n++;
   });
-  const info=document.getElementById('hwSaveInfo');
-  if(info){
-    info.textContent='Сохранено: '+curSubject+' — '+n+' дн.';
-    setTimeout(function(){ info.textContent=''; }, 2500);
-  }
+  if(btn){ btn.disabled=true; }
+  if(info){ info.textContent='Сохраняю…'; info.style.color='#777'; }
+  hwRef.child(safeKey(curSubject)).update(obj)
+    .then(function(){
+      if(btn){ btn.disabled=false; }
+      if(info){
+        hwInfoHold=true;
+        info.textContent='Сохранено ✓ — '+curSubject;
+        info.style.color='#2e7d32';
+        setTimeout(function(){
+          hwInfoHold=false;
+          if(info) info.textContent='';
+        }, 3000);
+      }
+    })
+    .catch(function(err){
+      if(btn){ btn.disabled=false; }
+      if(info){
+        info.textContent='Ошибка: '+err.message;
+        info.style.color='#a01c1c';
+      }
+      console.error('Д/З не сохранилось:', err);
+    });
 }
 function hwInputsFocused(){
   const ae=document.activeElement;
@@ -904,17 +919,23 @@ function renderHomework(){
     hwBox.style.display='block';
     if(hwInputsFocused()) return;
     const days=weekDays(), todayIso=iso(new Date());
+    const d0=days[0], d4=days[4];
+    document.getElementById('hwWeekLabel').textContent=
+      isoToLabel(iso(d0))+' — '+isoToLabel(iso(d4))+' '+new Date(iso(d4)).getFullYear();
     document.getElementById('hwTable').innerHTML=
-      '<table class="hwgrid"><tr><th>Дата</th><th style="text-align:left;">Домашнее задание</th></tr>'+
+      '<table class="hw-long"><tr><th>Дата</th><th style="text-align:left;">Домашнее задание</th></tr>'+
       days.map(function(d){
         const i=iso(d);
         const txt=hwOf(curSubject,i);
-        return '<tr><td class="datecell-td"><div class="hw-datecell '+(i===todayIso?'sel':'')+'" title="'+isoToLabel(i)+'">'+
-          WDN[d.getDay()]+'<br>'+d.getDate()+'</div></td>'+
-          '<td><input class="hw-in" data-subj="'+curSubject+'" data-date="'+i+'" value="'+txt.replace(/"/g,'&quot;')+'" '+
-          'oninput="hwTyping(this)" '+
+        return '<tr>'+
+          '<td class="datecell"><div class="hw-datebox'+(i===todayIso?' today':'')+'" title="'+isoToLabel(i)+'">'+
+          '<span class="day-name">'+WDN[d.getDay()]+'</span>'+
+          '<span class="day-num">'+d.getDate()+'</span></div></td>'+
+          '<td class="inputcell"><input class="hw-in" data-subj="'+curSubject+'" data-date="'+i+'" '+
+          'value="'+txt.replace(/"/g,'&quot;')+'" oninput="hwTyping(this)" '+
           'onkeydown="if(event.key===\'Enter\'){this.blur();}" '+
-          'placeholder="Текст задания"></td></tr>';
+          'placeholder="Текст задания"></td>'+
+        '</tr>';
       }).join('')+'</table>';
     hwList.innerHTML='';
     updateHwSaveLabel();
@@ -975,7 +996,7 @@ function renderProfile(){
   if(!currentUser||currentUser.role!=='student') return;
   document.getElementById('profileCard').innerHTML=
     '<div style="display:flex;align-items:center;gap:14px;">'+
-    '<div class="avatar" style="width:56px;height:56px;font-size:24px;background:#2f6db5;">'+currentUser.name.charAt(0)+'</div>'+
+    '<div class="avatar" style="width:56px;height:56px;font-size:24px;background:#8e44ad;">'+avInitial(currentUser.name)+'</div>'+
     '<div><div style="font-weight:700;font-size:17px;">'+currentUser.name+'</div>'+
     '<div style="color:#777;font-size:13px;margin-top:3px;">'+currentUser.klass+'</div>'+
     '<div style="color:#999;font-size:12px;margin-top:3px;">'+SCHOOL_NAME+'</div></div></div>';
