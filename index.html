@@ -3,200 +3,346 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Школьный журнал</title>
+<title>Моя школа</title>
+<link rel="icon" type="image/jpeg" href="russia-icon.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-:root { --shadow: 0 1px 3px rgba(0,0,0,.08); --border-color: #b8b8b8; }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Golos Text', -apple-system, sans-serif; background:#f0f2f5; color:#1a1a1a; padding-bottom:40px; }
+body { font-family:'Golos Text', Arial, sans-serif; background:#f2f4f7; color:#222; }
 
-header { background:#fff; padding:12px 24px; display:flex; align-items:center; justify-content:space-between;
-  box-shadow:0 1px 4px rgba(0,0,0,.08); position:sticky; top:0; z-index:100; flex-wrap:wrap; gap:8px; }
-.logo-area img { height:34px; width:auto; display:block; }
+/* ===== ЭКРАНЫ ВХОДА ===== */
+.center-screen { display:none; min-height:100vh; align-items:center; justify-content:center; padding:20px; }
+.center-screen.active { display:flex; }
+.auth-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.08);
+  padding:40px 48px; max-width:420px; width:100%; text-align:center; }
+.login-myschool-logo { margin-bottom:6px; max-width:100%; height:auto; }
+.auth-card h1 { font-size:30px; font-weight:800; letter-spacing:1px; margin-bottom:6px; color:#1c2733; }
+.auth-card .sub { color:#7733cc; font-size:15px; margin-bottom:24px; }
+.auth-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%;
+  padding:13px; border:1px solid #2f6db5; background:#fff; color:#2f6db5; font-family:inherit;
+  font-size:15px; font-weight:600; border-radius:8px; cursor:pointer; margin-bottom:10px; }
+.auth-btn:hover { background:#eef4fb; }
+.auth-btn.primary { background:#2f6db5; color:#fff; }
+.auth-btn.primary:hover { background:#275c9c; }
+.auth-link { display:inline-block; margin-top:10px; color:#2f6db5; font-size:14px; text-decoration:none; }
+.auth-input { width:100%; padding:12px; margin-bottom:10px; border:1px solid #c8c8c8;
+  border-radius:8px; font-family:inherit; font-size:15px; }
+.auth-input:focus { outline:none; border-color:#2f6db5; }
+.auth-error { background:#f8e2e2; color:#a01c1c; padding:9px 12px; border-radius:6px;
+  font-size:13px; margin-bottom:10px; display:none; }
+.role-label { font-size:13px; color:#777; margin-bottom:14px; }
 
-nav { display:flex; gap:4px; flex-wrap:wrap; }
-nav button { border:none; background:transparent; padding:8px 14px; border-radius:8px; cursor:pointer;
-  font-family:inherit; font-size:14px; color:#3c4043; }
-nav button:hover { background:#f1f3f4; }
-nav button.active { background:#e8f0fe; color:#0e69d5; font-weight:600; }
+/* ===== ХАБ ПОСЛЕ ВХОДА ===== */
+.hub-card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.08);
+  padding:40px 48px; max-width:520px; width:100%; text-align:center; }
+.hub-card h2 { font-size:26px; margin-bottom:8px; }
+.hub-fio { color:#333; font-size:16px; margin-bottom:6px; }
+.hub-note { color:#555; font-size:14px; margin:16px 0 22px; }
+.org-item { display:block; text-align:left; border:1px solid #dcdcdc; border-radius:10px;
+  padding:14px 18px; margin-bottom:10px; cursor:pointer; background:#fff; text-decoration:none; }
+.org-item:hover { border-color:#2f6db5; background:#f6f9fd; }
+.org-item .org-title { font-weight:700; font-size:16px; color:#2c3e50; }
+.org-item .org-school { font-size:12px; color:#777; margin-top:3px; }
+.hub-oid { font-size:12px; color:#aaa; margin-top:16px; line-height:1.5; }
+.hub-out { margin-top:14px; background:none; border:1px solid #c8c8c8; border-radius:6px;
+  padding:6px 14px; font-family:inherit; font-size:13px; cursor:pointer; }
 
-.user-box { display:flex; align-items:center; gap:10px; }
-.user-box .avatar { width:32px; height:32px; border-radius:50%; background:#0e69d5; color:#fff;
-  display:flex; align-items:center; justify-content:center; font-weight:600; font-size:14px; }
-.db-status { font-size:12px; padding:3px 10px; border-radius:12px; }
-.db-ok { background:#e6f4ea; color:#137333; }
-.db-bad { background:#fce8e6; color:#c5221f; }
+/* ===== ПРИЛОЖЕНИЕ ===== */
+#screen-app { display:none; }
+#screen-app.active { display:block; }
 
-main { max-width:1200px; margin:24px auto; padding:0 16px; }
+/* ШАПКА ПРОФИЛЯ: только имя и аватар */
+.topbar { background:#fff; padding:12px 16px; position:relative; }
+.userbox { margin-left:auto; display:flex; align-items:center; justify-content:flex-end; gap:8px;
+  color:#2c3e50; font-size:13px; font-weight:500; }
+.userbox .avatar { width:32px; height:32px; border-radius:50%; background:#8e44ad; color:#fff;
+  display:flex; align-items:center; justify-content:center; font-weight:700; }
+.userbox button { background:transparent; border:1px solid #bdc3c7; color:#2c3e50;
+  padding:4px 10px; border-radius:4px; cursor:pointer; font-family:inherit; font-size:12px; }
+.db-status { font-size:11px; padding:3px 8px; border-radius:10px; }
+.db-ok { background:#2e5c2e; color:#cfe8cf; }
+.db-bad { background:#7a2a2a; color:#ffd9d9; }
+
+/* СТРОКА ГЛАВНЫХ ВКЛАДОК — ПОД ШАПКОЙ ПРОФИЛЯ */
+.mainnav {
+  background:#fff;
+  display:flex;
+  justify-content:flex-end;
+  gap:4px;
+  flex-wrap:wrap;
+  padding:0 16px;
+}
+.mainnav button {
+  background:transparent; border:none; color:#555; font-family:inherit;
+  font-size:14px; font-weight:500; padding:8px 16px; cursor:pointer;
+  border-radius:0; transition:color .15s ease;
+}
+.mainnav button:hover { color:#2f6db5; }
+.mainnav button.active { color:#2f6db5; font-weight:600; }
+
+/* ВТОРАЯ СТРОКА: по центру; у выбранной — серая линия под текстом */
+.subbar {
+  background:#fff;
+  display:flex;
+  justify-content:center;
+  gap:2px;
+  padding:0 16px 6px;
+  flex-wrap:wrap;
+  border-bottom:1px solid #dcdcdc;
+  margin-bottom:8px;
+}
+.subbar button {
+  background:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  color:#555;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:500;
+  padding:5px 16px 3px;
+  cursor:pointer;
+  border-radius:0;
+  transition:color .15s ease, border-color .15s ease;
+}
+.subbar button:hover { color:#2f6db5; }
+.subbar button.on { color:#2f6db5; font-weight:600; border-bottom:2px solid #c9c9c9; }
+
+main { max-width:1250px; margin:10px auto; padding:0 12px; }
 .screen { display:none; }
 .screen.active { display:block; }
-h2 { font-size:20px; margin-bottom:16px; font-weight:600; }
+h2 { font-size:19px; margin:14px 0 10px; }
+.lesson-name { font-size:36px; font-weight:800; margin:16px 0 14px; letter-spacing:-.5px; color:#1c2733; }
 
-.date-pill { text-align:center; margin:20px auto 10px; padding:5px 16px; background:#e9edf2; border-radius:20px;
-  color:#5f6368; font-size:13px; font-weight:500; width:fit-content; }
-.day-card { background:#fff; border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
-.grade-row { display:flex; align-items:center; padding:14px 18px; gap:16px; }
-.grade-row + .grade-row { border-top:1px solid #eef0f2; }
-.grade-box { min-width:40px; height:40px; border-radius:10px; color:#1a1a1a; background:#eef1f5;
-  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px;
-  position:relative; flex-shrink:0; padding:0 6px; }
-.g5 { background:#e6f4ea; color:#137333; }
-.g4 { background:#e8f0fe; color:#1967d2; }
-.g3 { background:#fef7e0; color:#b06000; }
-.g2, .g1 { background:#fce8e6; color:#c5221f; }
-.weight-badge { position:absolute; bottom:-6px; right:-6px; background:#0e69d5; color:#fff; font-size:10px;
-  min-width:18px; height:18px; border-radius:9px; display:flex; align-items:center; justify-content:center;
-  padding:0 4px; font-weight:600; border:2px solid #fff; }
-.grade-info { flex-grow:1; min-width:0; }
-.subj { font-size:15px; font-weight:700; }
-.wtype { font-size:13px; color:#6c737d; margin-top:3px; }
-.arrow { color:#9aa0a6; font-size:20px; flex-shrink:0; }
+.subj-btns { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; justify-content:flex-end; }
+.subj-btns button { background:#2f6db5; color:#fff; border:1px solid #2a5f9e; border-radius:4px;
+  padding:7px 16px; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; }
+.subj-btns button.on { background:#1f4f8f; box-shadow:inset 0 2px 4px rgba(0,0,0,.25); }
 
-.card { background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:18px; margin-bottom:12px; }
-.empty { text-align:center; color:#9aa0a6; padding:40px 20px; font-size:14px; }
+.weeknav { display:flex; align-items:center; gap:6px; margin:8px 0; flex-wrap:wrap; }
+.weeknav button { background:#fff; border:1px solid #c8c8c8; border-radius:4px; padding:5px 10px;
+  cursor:pointer; font-family:inherit; font-size:13px; }
+.weeknav .wk-label { font-weight:700; padding:0 8px; }
+.tablewrap { overflow-x:auto; }
+table.jgrid { border-collapse:collapse; background:#fff; }
+.jgrid th, .jgrid td { border:1px solid #c9c9c9; width:32px; min-width:32px; max-width:32px;
+  height:32px; padding:0; text-align:center; vertical-align:middle; font-size:12px; }
+.jgrid th.name-h, .jgrid td.name { width:170px; min-width:170px; max-width:170px; }
+.jgrid thead tr.week-row th { background:#f4f4f4; font-weight:600; font-size:11px; }
+.jgrid thead tr.week-row th.today { background:#fdf3c8; }
+.jgrid thead tr.week-row th.hl { background:#d6ecd2; }
+.jgrid thead tr.type-row th { background:#fafafa; font-weight:500; font-size:10px; color:#666; height:20px; }
+.jgrid thead tr.type-row th.tcell { cursor:pointer; font-size:10px; font-weight:700; color:#137333; }
+.jgrid th.num-h { background:#f4f4f4; }
+.jgrid th.name-h { text-align:left; padding-left:8px; background:#f4f4f4; }
+.jgrid th.avg-h { background:#2f6db5; color:#fff; }
+.jgrid td.num { color:#777; }
+.jgrid td.name { text-align:left; padding-left:8px; font-weight:600; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; background:#fff; }
+.jgrid td.name.hl, .jgrid td.num.hl { background:#d6ecd2; }
+.jgrid td.mark { background:#fff; cursor:pointer; font-weight:400; color:#000; }
+.jgrid td.mark:hover { outline:2px solid #137333; outline-offset:-2px; }
+.jgrid td.mark.hl, .jgrid td.mark.has-v.hl { background:#d6ecd2; }
+.jgrid td.avg-val { background:#fff; color:#000; font-weight:400; border-left:2px solid #2f6db5; }
+.jgrid td.avg-val.hl { background:#d6ecd2; }
 
-table.schedule { width:100%; border-collapse:collapse; background:#fff; border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
-.schedule td, .schedule th { padding:10px 12px; border-bottom:1px solid #eef0f2; font-size:14px; text-align:left; }
-.schedule th { background:#f7f9fb; font-weight:600; }
-.schedule .day { font-weight:700; color:#0e69d5; white-space:nowrap; }
+/* ЗЕБРА */
+.jgrid tbody tr.z td { background:#f4f5f7; }
+.jgrid tbody tr.z td.mark.has-v { background:#f4f5f7; }
+.jgrid tbody tr.z td.mark.hl,
+.jgrid tbody tr.z td.mark.has-v.hl { background:#d6ecd2; }
+.jgrid tbody tr.z td.name.hl,
+.jgrid tbody tr.z td.num.hl,
+.jgrid tbody tr.z td.avg-val.hl { background:#d6ecd2; }
 
-.journal-controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:14px; }
-.journal-controls select { padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; background:#fff; }
-.journal-wrap { overflow-x:auto; }
+/* ПОДСВЕТКА ПРИ НАВЕДЕНИИ: ФИОЛЕТОВАЯ */
+.jgrid td.hov,
+.jgrid thead tr.week-row th.hov,
+.jgrid thead tr.type-row th.hov { background:#e6d8f7; }
+.jgrid tbody tr.z td.hov { background:#e6d8f7; }
+.jgrid td.mark.has-v.hov { background:#e6d8f7; }
 
-/* ЖУРНАЛ: клетки 32x32, как в Excel */
-table.jgrid { border-collapse:collapse; background:#fff; box-shadow:var(--shadow); table-layout:fixed; }
-.jgrid th, .jgrid td {
-  border: 1px solid var(--border-color);
-  text-align:center; vertical-align:middle;
-  padding: 0; height: 32px;
-}
-.jgrid th { background:#f7f9fb; color:#3c4043; font-weight:600; font-size:11px; width:32px; }
-.jgrid th.name-h { text-align:left; padding-left:10px; width:150px; min-width:150px; background:#fff; border-right:2px solid #8a8a8a; }
-.jgrid td.name { background:#fff; font-weight:600; font-size:12px; padding-left:10px; text-align:left;
-  white-space:nowrap; border-right:2px solid #8a8a8a; }
-.jgrid td.avg { background:#f7f9fb; font-weight:700; color:#3c4043; font-size:12px;
-  border-left:2px solid #8a8a8a; width:44px; min-width:44px; }
-.jgrid td.mark-cell { cursor:pointer; position:relative; font-weight:700; font-size:14px; color:#000; background:#fff; }
-.jgrid td.mark-cell:hover, .jgrid td.empty-c:hover { outline:2px solid #0e69d5; outline-offset:-2px; }
-.jgrid td.empty-c { color:#dcdcdc; cursor:pointer; font-size:12px; }
-.wbadge { position:absolute; top:0; right:0; background:#0e69d5; color:#fff; font-size:8px;
-  min-width:13px; height:13px; border-radius:0 0 0 6px; display:flex; align-items:center; justify-content:center; }
-.jgrid .cell-input { width:100%; height:100%; border:none; text-align:center; font-size:14px; font-weight:700;
-  font-family:inherit; background:#fff; outline:none; padding:0; }
-.jgrid .cell-input:focus { box-shadow: inset 0 0 0 2px #0e69d5; }
-.journal-meta { font-size:12px; color:#6c737d; margin-top:10px; }
+.jgrid .mv { font-weight:400; font-size:12px; line-height:1.1; margin-top:1px; }
+.jgrid .mt { font-size:8px; font-weight:600; color:#137333; line-height:1.1; }
+.jgrid .cell-input { width:100%; height:100%; border:none; background:transparent; text-align:center;
+  font-family:inherit; font-size:12px; font-weight:400; color:#000; outline:none; padding:0; }
+.jgrid .cell-input:focus { background:#e4f3e1; box-shadow:inset 0 0 0 2px #137333; }
+.jgrid select { width:100%; height:100%; border:2px solid #137333; font-family:inherit; font-size:10px; }
+.journal-meta { font-size:12px; color:#777; margin-top:8px; }
 
-table.pgrid { width:100%; border-collapse:collapse; background:#fff; box-shadow:var(--shadow); }
-.pgrid th, .pgrid td { border:1px solid #eef0f2; padding:8px 10px; font-size:13px; text-align:center; }
-.pgrid th { background:#f7f9fb; font-weight:600; }
+/* МЕНЮ ПО ПРАВОМУ КЛИКУ */
+#cellMenu { display:none; position:fixed; z-index:1000; background:#fff; border:1px solid #c8c8c8;
+  border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.15); overflow:hidden; min-width:180px; }
+#cellMenu .cmi { padding:8px 14px; font-size:13px; cursor:pointer; color:#2c3e50; }
+#cellMenu .cmi:hover { background:#f0f2f5; color:#2f6db5; }
+#cellMenu .cmi.danger { color:#a01c1c; }
+#cellMenu .cmi.danger:hover { background:#f8e2e2; }
+
+.card { background:#fff; border:1px solid #dcdcdc; border-radius:8px; padding:16px; margin-bottom:10px; }
+.empty { text-align:center; color:#999; padding:36px 16px; font-size:14px; }
+
+table.hwgrid { border-collapse:collapse; margin:0 auto; }
+.hwgrid th { background:#f4f4f4; font-weight:600; font-size:13px; padding:8px 14px; border:1px solid #c9c9c9; }
+.hwgrid td { border:1px solid #c9c9c9; padding:4px; text-align:center; vertical-align:middle; }
+.hwgrid td.datecell-td { width:44px; min-width:44px; }
+.hw-datecell { width:32px; height:32px; border:1px solid #c9c9c9; border-radius:4px;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+  font-size:10px; font-weight:600; color:#444; background:#fafafa; margin:0 auto; padding:1px; line-height:1.1; }
+.hw-datecell.sel { background:#2f6db5; color:#fff; }
+.hwgrid input { width:420px; max-width:60vw; padding:8px 10px; border:1px solid #c8c8c8;
+  border-radius:4px; font-family:inherit; font-size:14px; }
+.hwgrid input.saved { border-color:#2e7d32; background:#f2f9f0; }
+.blue-btn2 { background:#2f6db5; color:#fff; border:1px solid #2a5f9e; cursor:pointer;
+  font-weight:600; padding:8px 12px; border-radius:4px; font-family:inherit; }
+.hw-item { border-left:4px solid #2f6db5; }
+.hw-item .meta { font-size:12px; color:#777; margin-bottom:4px; }
+
+table.pgrid { width:100%; border-collapse:collapse; border:1px solid #c9c9c9; }
+.pgrid th, .pgrid td { border:1px solid #dcdcdc; padding:7px 9px; font-size:13px; text-align:center; }
+.pgrid th { background:#f4f4f4; font-weight:600; }
 .pgrid td.name { text-align:left; font-weight:600; white-space:nowrap; }
-
-.hw-item { border-left:4px solid #0e69d5; }
-.hw-item .meta { font-size:12px; color:#6c737d; margin-bottom:4px; }
-.form-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
-.form-row input, .form-row select, .form-row textarea, .form-row button { padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; }
-.sched-editor textarea { width:100%; min-height:70px; padding:9px 12px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:14px; margin-top:6px; }
-.btn { background:#0e69d5; color:#fff; border:none !important; cursor:pointer; font-weight:600; }
-.btn:hover { background:#0b5bbd; }
-.btn-secondary { background:#e8f0fe; color:#0e69d5; cursor:pointer; font-weight:600; }
-.item-x { background:none; border:none; color:#c5221f; cursor:pointer; font-size:16px; font-weight:700; font-family:inherit; }
-
-.login-wrap { max-width:380px; margin:60px auto; }
-.login-wrap input { width:100%; padding:12px; margin-bottom:10px; border:1px solid #dadce0; border-radius:10px; font-family:inherit; font-size:15px; }
-.login-wrap .btn { width:100%; padding:12px; font-size:15px; }
-.login-hint { font-size:12px; color:#6c737d; text-align:center; margin-top:14px; line-height:1.6; }
-.error-msg { background:#fce8e6; color:#c5221f; padding:10px 14px; border-radius:10px; font-size:13px; margin-bottom:12px; display:none; }
+.sched-editor textarea { width:100%; min-height:56px; padding:8px 10px; border:1px solid #c8c8c8;
+  border-radius:4px; font-family:inherit; font-size:14px; margin-top:4px; }
+table.schedule { width:100%; border-collapse:collapse; border:1px solid #dcdcdc; margin-bottom:10px; }
+.schedule td, .schedule th { padding:9px 12px; border-bottom:1px solid #ececec; font-size:14px; text-align:left; }
+.schedule th { background:#f4f4f4; font-weight:600; }
+.schedule .day { color:#2f6db5; font-weight:700; }
+.date-pill { display:inline-block; margin:14px 0 6px; padding:4px 14px; background:#f0f0f0;
+  border:1px solid #ddd; border-radius:14px; font-size:13px; color:#555; }
+.day-card { border:1px solid #dcdcdc; border-radius:8px; overflow:hidden; background:#fff; }
+.grade-row { display:flex; align-items:center; padding:12px 16px; gap:14px; }
+.grade-row + .grade-row { border-top:1px solid #eee; }
+.grade-box { min-width:36px; height:36px; border-radius:6px; display:flex; align-items:center;
+  justify-content:center; font-weight:700; font-size:16px; position:relative; flex-shrink:0; padding:0 6px; }
+.g5 { background:#e2f0e2; color:#1e6b1e; } .g4 { background:#e2ecf8; color:#1f4f8f; }
+.g3 { background:#faf0d8; color:#8a6400; } .g2, .g1 { background:#f8e2e2; color:#a01c1c; }
+.gn { background:#eceff1; color:#546e7a; }
+.weight-badge { position:absolute; bottom:-6px; right:-6px; background:#2f6db5; color:#fff;
+  font-size:10px; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center;
+  justify-content:center; font-weight:600; border:2px solid #fff; }
+.grade-info { flex-grow:1; } .subj { font-weight:700; font-size:14px; }
+.wtype { font-size:12px; color:#777; margin-top:2px; }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo-area">
-    <img src="https://gu-st.ru/epgu-app-school-st/assets/svg/logo-big.svg" alt="" onerror="this.style.display='none'">
+<!-- ЭКРАН 1: ВЫБОР РОЛИ -->
+<div class="center-screen active" id="screen-welcome">
+  <div class="auth-card">
+    <img src="/assets/dist-gosuslugi/myschool_logo.23b5680a.svg" width="191" height="20"
+         alt="Моя школа" class="login-myschool-logo"
+         onerror="this.outerHTML='<h1>МОЯ ШКОЛА</h1>'">
+    <div class="sub">Госуслуги Управление образованием</div>
+    <button class="auth-btn" onclick="startLogin('teacher')">Войти как учитель</button>
+    <button class="auth-btn primary" onclick="startLogin('student')">Войти как ученик</button>
+    <a class="auth-link" href="#">Служба поддержки</a>
   </div>
-  <nav id="nav"></nav>
-  <div class="user-box" id="userBox"></div>
-</header>
+</div>
 
-<main>
-  <!-- ВХОД -->
-  <div class="screen" id="screen-login">
-    <div class="login-wrap">
-      <div class="card">
-        <h2 style="text-align:center;">Вход в дневник</h2>
-        <div class="error-msg" id="loginError"></div>
-        <input id="loginUser" placeholder="Логин" autocomplete="username">
-        <input id="loginPass" type="password" placeholder="Пароль" autocomplete="current-password">
-        <button class="btn" onclick="doLogin()">Войти</button>
-        <div class="login-hint">Ученики: student1 … student20 (пароль совпадает с логином)<br>Учитель: teacher / teacher</div>
+<!-- ЭКРАН 2: ЛОГИН И ПАРОЛЬ -->
+<div class="center-screen" id="screen-login">
+  <div class="auth-card">
+    <img src="/assets/dist-gosuslugi/myschool_logo.23b5680a.svg" width="191" height="20"
+         alt="Моя школа" class="login-myschool-logo"
+         onerror="this.outerHTML='<h1>МОЯ ШКОЛА</h1>'">
+    <div class="sub">Госуслуги Управление образованием</div>
+    <div class="role-label" id="roleLabel"></div>
+    <div class="auth-error" id="loginError"></div>
+    <input id="loginUser" class="auth-input" placeholder="Логин" autocomplete="username">
+    <input id="loginPass" class="auth-input" type="password" placeholder="Пароль" autocomplete="current-password">
+    <button class="auth-btn primary" onclick="doLogin()">Войти</button>
+    <a class="auth-link" href="#" onclick="showWelcome(); return false;">Назад</a>
+  </div>
+</div>
+
+<!-- ЭКРАН 3: ХАБ С ОРГАНИЗАЦИЯМИ -->
+<div class="center-screen" id="screen-hub">
+  <div class="hub-card">
+    <h2 id="hubHello">Здравствуйте!</h2>
+    <div class="hub-fio" id="hubFio"></div>
+    <div class="hub-note">Выберите организацию, чтобы продолжить.</div>
+    <div id="hubOrgs"></div>
+    <div class="hub-oid">OID: 1215134744<br>СНИЛС: 197-***-*** 04</div>
+    <button class="hub-out" onclick="logout()">Выйти</button>
+  </div>
+</div>
+
+<!-- ПРИЛОЖЕНИЕ -->
+<div id="screen-app">
+  <!-- ШАПКА ПРОФИЛЯ -->
+  <div class="topbar">
+    <div class="userbox" id="userBox"></div>
+  </div>
+
+  <!-- СТРОКА ВКЛАДОК — ПОД ШАПКОЙ ПРОФИЛЯ -->
+  <nav class="mainnav" id="nav"></nav>
+
+  <!-- Кнопки журнала: по центру, включая «Онлайн-уроки» -->
+  <div class="subbar" id="subbar" style="display:none;">
+    <button data-sub="marks" class="on" onclick="subAction('marks')">Отметки</button>
+    <button data-sub="homework" onclick="subAction('homework')">Домашние задания</button>
+    <button data-sub="online" onclick="subAction('online')">Онлайн-уроки</button>
+    <button data-sub="performance" onclick="subAction('performance')">Успеваемость</button>
+    <button data-sub="todayhw" onclick="subAction('todayhw')">Д/З на сегодня</button>
+  </div>
+
+  <main>
+    <div class="screen" id="screen-journal">
+      <div class="lesson-name" id="lessonName"></div>
+      <div class="subj-btns" id="subjBtns"></div>
+      <div class="weeknav">
+        <button onclick="weekShift(-28)">‹‹</button><button onclick="weekShift(-7)">‹</button>
+        <span class="wk-label" id="wkLabel"></span>
+        <button onclick="weekShift(7)">›</button><button onclick="weekShift(28)">››</button>
+        <button onclick="weekGoToday()">Сегодня</button>
       </div>
+      <div class="tablewrap" id="journalTable"></div>
+      <div id="todayHwBox"></div>
+      <div class="journal-meta">Клик по клетке — ввод. Enter — <b>сохранить</b>, Esc — отменить. <b>Стрелки</b> — соседняя клетка. Оценка 2–5, <b>4/3</b> — свой вес (иначе вес по виду работы: СР — 3). <b>Правый клик</b> — меню: Н (не был), О (опоздал), вес, удаление.</div>
     </div>
-  </div>
 
-  <!-- ДНЕВНИК (ученик) -->
-  <div class="screen" id="screen-diary"><h2>Оценки</h2><div id="diaryList"></div></div>
-
-  <!-- ОТМЕТКИ (учитель) -->
-  <div class="screen" id="screen-journal">
-    <h2>Отметки</h2>
-    <div class="journal-controls">
-      <select id="jSubject" onchange="renderJournal()">
-        <option>Русский язык</option><option>Математика</option><option>Литер. чтение</option>
-        <option>Окруж. мир</option><option>ИЗО</option><option>Труд(технология)</option>
-        <option>Физкультура</option><option>Англ. яз.</option><option>Музыка</option>
-      </select>
-      <select id="jType" onchange="renderJournal()">
-        <option>Ответ на уроке</option><option>Контрольная работа</option><option>Самостоятельная работа</option>
-        <option>Тест</option><option>Проект</option><option>Домашняя работа</option><option>Диктант</option>
-      </select>
+    <div class="screen" id="screen-schedule">
+      <h2>Расписание</h2>
+      <div id="schedTeacherEditor" style="display:none;"></div>
+      <div id="scheduleList"></div>
     </div>
-    <div class="journal-wrap" id="journalTable"></div>
-    <div class="journal-meta">Клик по клетке — поле ввода. Наберите оценку (2–5) и нажмите Enter. Пустое поле + Enter — удалить. Правый клик — вес оценки.</div>
-  </div>
 
-  <!-- РАСПИСАНИЕ -->
-  <div class="screen" id="screen-schedule">
-    <h2>Расписание</h2>
-    <div id="schedTeacherEditor" style="display:none;"></div>
-    <div id="scheduleList"></div>
-  </div>
-
-  <!-- ДОМАШНИЕ ЗАДАНИЯ -->
-  <div class="screen" id="screen-homework">
-    <h2>Домашние задания</h2>
-    <div id="hwTeacherForm" style="display:none;">
-      <div class="card">
-        <div class="form-row">
-          <select id="hwSubject" style="flex:1;">
-            <option>Русский язык</option><option>Математика</option><option>Литер. чтение</option>
-            <option>Окружающий мир</option><option>Физкультура</option><option>Музыка</option>
-          </select>
-          <input id="hwText" placeholder="Текст задания" style="flex:2;">
-          <input id="hwDue" type="date" style="flex:1;">
-          <button class="btn" onclick="addHomework()">Добавить</button>
+    <div class="screen" id="screen-homework">
+      <div class="lesson-name" id="lessonName2"></div>
+      <div class="subj-btns" id="subjBtns2"></div>
+      <div id="hwTeacherForm" style="display:none;">
+        <h3 style="margin:6px 0 8px;">Задать Д/З на неделю</h3>
+        <div style="margin-bottom:10px;">
+          <button class="blue-btn2" id="hwSaveBtn" onclick="saveAllHW()">Сохранить Д/З</button>
+          <span id="hwSaveInfo" style="font-size:13px;color:#777;margin-left:8px;"></span>
         </div>
+        <div class="tablewrap" id="hwTable"></div>
+        <div style="font-size:12px;color:#777;margin-top:6px;">Кнопка сохраняет все поля в выбранный предмет. Также всё сохраняется само при наборе.</div>
       </div>
+      <div id="hwList"></div>
     </div>
-    <div id="hwList"></div>
-  </div>
 
-  <!-- УСПЕВАЕМОСТЬ (учитель) -->
-  <div class="screen" id="screen-performance">
-    <h2>Успеваемость (итоговые оценки)</h2>
-    <div class="journal-wrap" id="perfTable"></div>
-    <div class="journal-meta">Итоговая считается как средний балл с учётом веса всех оценок по предмету.</div>
-  </div>
+    <div class="screen" id="screen-performance">
+      <h2>Успеваемость класса</h2>
+      <div class="tablewrap" id="perfTable"></div>
+    </div>
 
-  <!-- ПРОФИЛЬ (ученик) -->
-  <div class="screen" id="screen-profile"><h2>Профиль</h2><div class="card" id="profileCard"></div></div>
-</main>
+    <div class="screen" id="screen-chats"><h2>Чаты</h2><div class="empty">Раздел в разработке</div></div>
+    <div class="screen" id="screen-abj"><h2>АРМ Класс</h2><div class="empty">Раздел в разработке</div></div>
+    <div class="screen" id="screen-help"><h2>Помощь</h2><div class="empty">Раздел в разработке</div></div>
+
+    <div class="screen" id="screen-online"><h2>Онлайн-уроки</h2><div class="empty">Раздел в разработке</div></div>
+
+    <div class="screen" id="screen-diary"><h2>Оценки</h2><div id="diaryList"></div></div>
+    <div class="screen" id="screen-profile"><h2>Профиль</h2><div class="card" id="profileCard"></div></div>
+  </main>
+</div>
+
+<!-- МЕНЮ ПО ПРАВОМУ КЛИКУ -->
+<div id="cellMenu"></div>
 
 <script>
-// ===== FIREBASE =====
 const firebaseConfig = {
   apiKey: "AIzaSyCw3RLQB_6HcOT8odym-CDGx4MQL5OT9Kw",
   authDomain: "school-f7fdd.firebaseapp.com",
@@ -209,362 +355,636 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const gradesRef = db.ref('grades');
-const hwRef     = db.ref('homework');
-const schedRef  = db.ref('schedule');
+const hwRef = db.ref('homework');
+const typesRef = db.ref('types');
+const schedRef = db.ref('schedule');
 
-// ===== ПОЛЬЗОВАТЕЛИ =====
-const STUDENT_NAMES = [
-  'Антон Смирнов', 'Анна Козлова', 'Алексей Волков', 'Анастасия Морозова', 'Андрей Лебедев',
-  'Борис Соколов', 'Виктория Панова', 'Владислав Ершов', 'Дарья Зайцева', 'Денис Крылов',
-  'Екатерина Фомина', 'Егор Тарасов', 'Жанна Белова', 'Иван Гусев', 'Ксения Орлова',
-  'Лев Шилов', 'Мария Рябова', 'Никита Дроздов', 'Ольга Никитина', 'Павел Клюев'
-];
-const USERS = {
-  teacher: { pass:'teacher', role:'teacher', name:'Елена Ивановна', klass:'Учитель' }
-};
-STUDENT_NAMES.forEach(function(n, i){
-  const login = 'student' + (i + 1);
-  USERS[login] = { pass: login, role:'student', name: n, klass:'4 «А»' };
-});
-const SUBJECTS = ['Русский язык','Математика','Литер. чтение','Окруж. мир','ИЗО','Труд(технология)','Физкультура','Англ. яз.','Музыка'];
-
-let currentUser = null;
-let GRADES = [], HOMEWORK = [], SCHED = null;
-
-// ===== СИНХРОНИЗАЦИЯ =====
-gradesRef.on('value', snap => {
-  const val = snap.val() || {};
-  GRADES = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
-  renderAll();
-}, err => setDbStatus(false, err));
-
-hwRef.on('value', snap => {
-  const val = snap.val() || {};
-  HOMEWORK = Object.keys(val).map(k => Object.assign({ id:k }, val[k]));
-  renderAll();
-});
-
-schedRef.on('value', snap => { SCHED = snap.val(); renderAll(); });
-
-function setDbStatus(ok, err){
-  const el = document.getElementById('dbStatus');
-  if (!el) return;
-  if (ok){ el.className='db-status db-ok'; el.textContent='База подключена'; }
-  else { el.className='db-status db-bad'; el.textContent='Нет связи с базой'; console.error(err); }
+function safeKey(str){
+  return (str||'').toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
 }
-db.ref('.info/connected').on('value', s => setDbStatus(!!s.val()));
 
-// ===== ВХОД =====
+const SCHOOL_NAME = 'МБОУ СОШ "Школа №34 имени А. С. Пушкина города Монск"';
+const SUBJECTS = ['Математика','Русский язык','Литер. чтение','Окруж. мир','Англ. яз.','Труд (технология)','ИЗО','Музыка','Физкультура','Разговоры о важном'];
+const TYPES_LIST = ['Ответ на уроке','Контрольная работа','Самостоятельная работа','Тест','Проект','Домашняя работа','Диктант'];
+const TYPE_ABBR = {'Ответ на уроке':'У','Контрольная работа':'КР','Самостоятельная работа':'СР','Тест':'Т','Проект':'ПР','Домашняя работа':'Д/З','Диктант':'Д'};
+
+const TYPE_WEIGHT = {
+  'Ответ на уроке':1,
+  'Домашняя работа':1,
+  'Тест':2,
+  'Самостоятельная работа':3,
+  'Контрольная работа':3,
+  'Диктант':2,
+  'Проект':2
+};
+
+const STUDENT_NAMES = [
+  'Антон Смирнов','Анна Козлова','Алексей Волков','Анастасия Морозова','Андрей Лебедев',
+  'Борис Соколов','Виктория Панова','Владислав Ершов','Дарья Зайцева','Денис Крылов',
+  'Екатерина Фомина','Егор Тарасов','Жанна Белова','Иван Гусев','Ксения Орлова',
+  'Лев Шилов','Мария Рябова','Никита Дроздов','Ольга Никитина','Павел Клюев'
+];
+const USERS = { teacher: { pass:'teacher', role:'teacher', name:'Токарев Антон Сергеевич', klass:'Учитель' } };
+STUDENT_NAMES.forEach(function(n,i){
+  const l='student'+(i+1);
+  USERS[l]={ pass:l, role:'student', name:n, klass:'4 «А»' };
+});
+
+let currentUser=null, GRADES=[], HW={}, TYPES={}, SCHED=null;
+let weekStart=null, curSubject=SUBJECTS[0], activeTab='diary', curSub='marks';
+
+gradesRef.on('value', s=>{ const v=s.val()||{}; GRADES=Object.keys(v).map(k=>Object.assign({id:k},v[k])); renderAll(); });
+hwRef.on('value', s=>{ HW=s.val()||{}; renderAll(); });
+typesRef.on('value', s=>{ TYPES=s.val()||{}; renderAll(); });
+schedRef.on('value', s=>{ SCHED=s.val(); renderAll(); });
+db.ref('.info/connected').on('value', s=>{
+  const el=document.getElementById('dbStatus');
+  if(!el) return;
+  el.className='db-status '+(s.val()?'db-ok':'db-bad');
+  el.textContent=s.val()?'База подключена':'Нет связи';
+});
+
+function showScreen(id){
+  document.querySelectorAll('.center-screen').forEach(e=>e.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showWelcome(){ showScreen('screen-welcome'); }
+function startLogin(role){
+  document.getElementById('roleLabel').textContent = role==='teacher'
+    ? 'Вход для учителя'
+    : 'Вход для ученика';
+  document.getElementById('loginError').style.display='none';
+  showScreen('screen-login');
+  document.getElementById('loginUser').focus();
+}
+function logout(){
+  currentUser=null;
+  const app=document.getElementById('screen-app');
+  app.classList.remove('active'); app.style.display='none';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  showScreen('screen-welcome');
+}
+
+function firstName(full){
+  const parts=(full||'').trim().split(/\s+/);
+  return parts.length>1 ? parts[1] : parts[0];
+}
+
 function doLogin(){
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value.trim();
-  const acc = USERS[u];
-  if (acc && acc.pass === p){
-    currentUser = Object.assign({ login:u }, acc);
-    sessionStorage.setItem('who', u);
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value.trim();
+  const a=USERS[u];
+  if(a && a.pass===p){
+    currentUser=Object.assign({login:u},a);
     document.getElementById('loginError').style.display='none';
-    activeTab = currentUser.role === 'teacher' ? 'journal' : 'diary';
-    buildUI();
+    showHub();
   } else {
-    const e = document.getElementById('loginError');
-    e.textContent = 'Неверный логин или пароль';
+    const e=document.getElementById('loginError');
+    e.textContent='Неверный логин или пароль';
     e.style.display='block';
   }
 }
-function logout(){ currentUser=null; sessionStorage.removeItem('who'); buildUI(); }
-document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('loginPass').focus(); });
 
-// ===== ИНТЕРФЕЙС =====
-let activeTab = 'diary';
+function showHub(){
+  document.getElementById('hubHello').textContent='Здравствуйте, '+firstName(currentUser.name)+'!';
+  document.getElementById('hubFio').textContent=currentUser.name;
+  const orgTitle = currentUser.role==='teacher' ? 'Электронный журнал' : 'Школьный дневник';
+  document.getElementById('hubOrgs').innerHTML='<a class="org-item" onclick="enterApp()">'+
+    '<div class="org-title">'+orgTitle+'</div>'+
+    '<div class="org-school">'+SCHOOL_NAME+'</div></a>';
+  showScreen('screen-hub');
+}
+function enterApp(){
+  document.getElementById('screen-hub').classList.remove('active');
+  const app=document.getElementById('screen-app');
+  app.style.display='block';
+  app.classList.add('active');
+  activeTab = currentUser.role==='teacher' ? 'journal' : 'diary';
+  curSub = 'marks';
+  buildUI();
+}
 
-function currentTabs(){
-  if (!currentUser) return [];
-  if (currentUser.role === 'teacher'){
-    return [
-      { id:'journal',     label:'Отметки' },
-      { id:'schedule',    label:'Расписание' },
-      { id:'homework',    label:'Домашние задания' },
-      { id:'performance', label:'Успеваемость' }
-    ];
-  }
+// ===== ВКЛАДКИ =====
+function teacherTabs(){
   return [
-    { id:'diary',    label:'Дневник' },
-    { id:'schedule', label:'Расписание' },
-    { id:'homework', label:'Задания' },
-    { id:'profile',  label:'Профиль' }
+    ['journal','Журнал'],
+    ['chats','Чаты'],
+    ['abj','АРМ Класс'],
+    ['schedule','Расписание'],
+    ['help','Помощь']
   ];
 }
-
+function studentTabs(){
+  return [
+    ['diary','Дневник'],
+    ['schedule','Расписание'],
+    ['homework','Задания'],
+    ['profile','Профиль']
+  ];
+}
 function buildUI(){
-  const nav = document.getElementById('nav');
-  const userBox = document.getElementById('userBox');
-  if (!currentUser){
-    nav.innerHTML=''; userBox.innerHTML='';
-    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-    document.getElementById('screen-login').classList.add('active');
-    return;
-  }
-  userBox.innerHTML = '<span class="db-status db-ok" id="dbStatus">База подключена</span>' +
-    '<div class="avatar">'+currentUser.name.charAt(0)+'</div>' +
-    '<span style="font-size:14px;">'+currentUser.name+'</span>' +
-    '<button class="btn-secondary" style="border:none;padding:7px 14px;border-radius:8px;" onclick="logout()">Выйти</button>';
-  nav.innerHTML = currentTabs().map(t =>
-    '<button data-tab="'+t.id+'" class="'+(t.id===activeTab?'active':'')+'" onclick="switchTab(\''+t.id+'\')">'+t.label+'</button>').join('');
-  switchTab(activeTab);
+  const nav=document.getElementById('nav');
+  const box=document.getElementById('userBox');
+  const subbar=document.getElementById('subbar');
+  box.innerHTML='<span class="db-status db-ok" id="dbStatus">База подключена</span>'+
+    '<div class="avatar">'+currentUser.name.charAt(0)+'</div><span>'+currentUser.name+'</span>'+
+    '<button onclick="logout()">Выйти</button>';
+  const tabs = currentUser.role==='teacher' ? teacherTabs() : studentTabs();
+  nav.innerHTML=tabs.map(t=>'<button data-tab="'+t[0]+'" class="'+(t[0]===activeTab?'active':'')+
+    '" onclick="openMainTab(\''+t[0]+'\')">'+t[1]+'</button>').join('');
+  subbar.style.display = (isTeacher() && activeTab==='journal') ? 'flex' : 'none';
+  if(isTeacher() && activeTab==='journal') setSub(curSub);
+  showCurrent();
+}
+function openMainTab(id){
+  activeTab=id;
+  document.querySelectorAll('#nav button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===id);
+  });
+  document.getElementById('subbar').style.display = (isTeacher() && id==='journal') ? 'flex' : 'none';
+  showCurrent();
 }
 
-function switchTab(id){
-  activeTab = id;
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById('screen-'+id).classList.add('active');
-  document.querySelectorAll('nav button').forEach(b => {
-    b.classList.toggle('active', b.dataset.tab === id);
+function setSub(id){
+  curSub=id;
+  document.querySelectorAll('#subbar button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.sub===id);
   });
+  if(id==='todayhw'){ actionTodayHW(); }
+  else {
+    document.getElementById('todayHwBox').innerHTML='';
+  }
+  showCurrent();
+}
+function subAction(id){ setSub(id); }
+
+function showCurrent(){
+  document.querySelectorAll('main .screen').forEach(s=>s.classList.remove('active'));
+  let target='screen-'+activeTab;
+  if(isTeacher() && activeTab==='journal'){
+    if(curSub==='homework') target='screen-homework';
+    else if(curSub==='performance') target='screen-performance';
+    else if(curSub==='online') target='screen-online';
+  }
+  const scr=document.getElementById(target);
+  if(scr) scr.classList.add('active');
   renderAll();
 }
-
-// ===== ОБЩЕЕ =====
-const MONTHS = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-function isoToLabel(iso){
-  const d = new Date(iso);
-  return d.getDate() + ' ' + MONTHS[d.getMonth()];
-}
-function gradeClass(v){ return 'g'+String(v).charAt(0); }
-function toISO(d){
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-}
-function getToday(){ return toISO(new Date()); }
-function studentLoginList(){ return Object.keys(USERS).filter(u=>u.startsWith('student')); }
 function isTeacher(){ return currentUser && currentUser.role==='teacher'; }
+function students(){ return Object.keys(USERS).filter(u=>u.indexOf('student')===0); }
 
-function renderAll(){
-  if (!currentUser) return;
-  renderDiary(); renderJournal(); renderSchedule(); renderHomework();
-  renderPerformance(); renderProfile();
+const MONTHS=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const WDN=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function isoToLabel(s){ const d=new Date(s); return d.getDate()+' '+MONTHS[d.getMonth()]; }
+function monday(d){ const x=new Date(d); const wd=(x.getDay()+6)%7; x.setDate(x.getDate()-wd); x.setHours(0,0,0,0); return x; }
+function weekDays(){
+  if(!weekStart) weekStart=monday(new Date());
+  const a=[];
+  for(let i=0;i<5;i++){ const d=new Date(weekStart); d.setDate(d.getDate()+i); a.push(d); }
+  return a;
+}
+function parseMark(str){
+  const s=(str||'').trim(); if(s==='') return null;
+  const up=s.toUpperCase();
+  if(up==='Н') return { value:'Н', weight:1, manual:false };
+  if(up==='О') return { value:'О', weight:1, manual:false };
+  const p=s.split('/');
+  const v=parseInt(p[0],10);
+  if(isNaN(v)||v<1||v>5) return null;
+  let w=null;
+  if(p.length>1){ const ww=parseInt(p[1],10); if(!isNaN(ww)&&ww>=1&&ww<=9) w=ww; }
+  return { value:String(v), weight:w, manual:w!==null };
+}
+function typeOf(subj, isoD){ const k=safeKey(subj); return (TYPES[k]&&TYPES[k][isoD])||''; }
+function hwOf(subj, isoD){ const k=safeKey(subj); return (HW[k]&&HW[k][isoD])||''; }
+function findGrade(student, isoD){
+  return GRADES.find(x=>x.student===student&&x.subject===curSubject&&x.date===isoD);
 }
 
-// ===== ДНЕВНИК (ученик) =====
-function renderDiary(){
-  const box = document.getElementById('diaryList');
-  if (!currentUser || currentUser.role!=='student') return;
-  const list = GRADES.filter(g => g.student === currentUser.login);
-  const groups = {};
-  list.forEach(g => { const d = g.date || '—'; if (!groups[d]) groups[d] = []; groups[d].push(g); });
-  const dates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a));
-  if (!dates.length){ box.innerHTML = '<div class="empty">Оценок пока нет</div>'; return; }
-  box.innerHTML = dates.map(d =>
-    '<div class="date-pill">'+isoToLabel(d)+'</div>' +
-    '<div class="day-card">' + groups[d].map(g =>
-      '<div class="grade-row">' +
-        '<div class="grade-box '+gradeClass(g.value)+'">'+g.value +
-          (g.weight>1 ? '<span class="weight-badge">'+g.weight+'</span>' : '') +
-        '</div>' +
-        '<div class="grade-info"><div class="subj">'+g.subject+'</div>' +
-        '<div class="wtype">'+(g.typeWork||'Ответ на уроке')+'</div></div>' +
-        '<div class="arrow">›</div>' +
-      '</div>').join('') +
-    '</div>').join('');
+function renderSubjBtns(id){
+  const box=document.getElementById(id); if(!box) return;
+  box.innerHTML=SUBJECTS.map(s=>'<button class="'+(s===curSubject?'on':'')+
+    '" onclick="selectSubject(\''+s+'\')">'+s+'</button>').join('');
+}
+function selectSubject(s){
+  curSubject=s;
+  renderSubjBtns('subjBtns'); renderSubjBtns('subjBtns2');
+  const ln=document.getElementById('lessonName'), ln2=document.getElementById('lessonName2');
+  if(ln) ln.textContent=s;
+  if(ln2) ln2.textContent=s;
+  updateHwSaveLabel();
+  renderJournal(); renderHomework();
+}
+function actionTodayHW(){
+  const box=document.getElementById('todayHwBox');
+  const today=iso(new Date());
+  const items=[];
+  SUBJECTS.forEach(subj=>{ const t=hwOf(subj,today); if(t) items.push({s:subj, t:t}); });
+  box.innerHTML='<div class="card" style="margin-top:10px;"><b>Д/З на сегодня</b>'+
+    (items.length?items.map(h=>'<div style="border-left:4px solid #2f6db5;padding:6px 10px;margin-top:8px;">'+
+      '<div style="font-size:12px;color:#777;">'+h.s+'</div>'+h.t+'</div>').join('')
+      :'<div style="color:#777;font-size:13px;margin-top:8px;">На сегодня заданий нет</div>')+'</div>';
 }
 
-// ===== ОТМЕТКИ (журнал учителя) =====
-const DAYS = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
-function lastWeekdays(n){
-  const days = [];
-  let d = new Date();
-  while (days.length < n){
-    if (d.getDay() !== 0 && d.getDay() !== 6) days.push(new Date(d));
-    d.setDate(d.getDate()-1);
-  }
-  return days.reverse();
+// ===== ЖУРНАЛ =====
+function weekShift(d){ if(!weekStart) weekStart=monday(new Date());
+  weekStart.setDate(weekStart.getDate()+d); renderJournal(); }
+function weekGoToday(){ weekStart=monday(new Date()); renderJournal(); }
+
+function clearHl(){ document.querySelectorAll('.jgrid .hl').forEach(e=>e.classList.remove('hl')); }
+function highlightCross(cell){
+  clearHl();
+  if(!cell) return;
+  const row=cell.parentElement;
+  Array.prototype.forEach.call(row.children, td=>td.classList.add('hl'));
+  const idx=Array.prototype.indexOf.call(row.children, cell);
+  document.querySelectorAll('.jgrid thead tr.week-row th').forEach(th=>{
+    if(Array.prototype.indexOf.call(th.parentElement.children, th)===idx) th.classList.add('hl');
+  });
+}
+
+function clearHover(){ document.querySelectorAll('.jgrid .hov').forEach(e=>e.classList.remove('hov')); }
+function highlightHover(cell){
+  clearHover();
+  if(!cell) return;
+  const row=cell.parentElement;
+  Array.prototype.forEach.call(row.children, td=>td.classList.add('hov'));
+  const idx=Array.prototype.indexOf.call(row.children, cell);
+  document.querySelectorAll('.jgrid thead tr.week-row th').forEach(th=>{
+    if(Array.prototype.indexOf.call(th.parentElement.children, th)===idx) th.classList.add('hov');
+  });
+  document.querySelectorAll('.jgrid thead tr.type-row th').forEach(th=>{
+    if(Array.prototype.indexOf.call(th.parentElement.children, th)===idx) th.classList.add('hov');
+  });
+}
+function setupHover(){
+  const t=document.getElementById('journalTable');
+  if(!t||t.dataset.hover==='1') return;
+  t.dataset.hover='1';
+  t.addEventListener('mouseover', function(e){
+    const td=e.target.closest('td');
+    if(td && td.classList.contains('mark')) highlightHover(td);
+    else clearHover();
+  });
+  t.addEventListener('mouseleave', clearHover);
+}
+
+function moveCell(student, isoD, dx, dy){
+  const isos=weekDays().map(iso);
+  const stuList=students();
+  let ci=isos.indexOf(isoD);
+  let ri=stuList.indexOf(student);
+  if(ci<0||ri<0) return;
+  ci+=dx; ri+=dy;
+  if(ci<0||ci>=isos.length||ri<0||ri>=stuList.length) return;
+  const nextStu=stuList[ri];
+  const cell=document.getElementById('c_'+nextStu+'_'+isos[ci]);
+  if(cell) editCell(nextStu, isos[ci], null);
 }
 
 function renderJournal(){
-  if (!isTeacher()) return;
-  const dates = lastWeekdays(8);
-  const isos = dates.map(toISO);
-  const subj = document.getElementById('jSubject').value;
+  if(!isTeacher()) return;
+  renderSubjBtns('subjBtns');
+  const ln=document.getElementById('lessonName'); if(ln) ln.textContent=curSubject;
+  const days=weekDays(), isos=days.map(iso), todayIso=iso(new Date());
+  document.getElementById('wkLabel').textContent=isoToLabel(isos[0])+' — '+isoToLabel(isos[4])+' '+new Date(isos[4]).getFullYear();
 
-  let html = '<table class="jgrid"><tr><th class="name-h">Ученик</th>';
-  dates.forEach(d => html += '<th>'+DAYS[d.getDay()]+'<br>'+d.getDate()+'</th>');
-  html += '<th class="avg">Ср.</th></tr>';
-
-  studentLoginList().forEach(stu => {
-    html += '<tr><td class="name">'+USERS[stu].name+'</td>';
-    isos.forEach(iso => {
-      const g = GRADES.find(x => x.student===stu && x.subject===subj && x.date===iso);
-      const cellId = 'c_'+stu+'_'+iso;
-      if (g){
-        html += '<td class="mark-cell" id="'+cellId+'" ' +
-          'onclick="editCell(\''+stu+'\',\''+iso+'\',\''+g.id+'\')" ' +
-          'oncontextmenu="setWeight(event,\''+g.id+'\');return false;">'+g.value+
-          (g.weight>1?'<span class="wbadge">'+g.weight+'</span>':'')+'</td>';
+  let html='<table class="jgrid">';
+  html+='<thead><tr class="week-row"><th class="num-h">№</th><th class="name-h">Ученик</th>';
+  days.forEach(d=>{ html+='<th class="'+(iso(d)===todayIso?'today':'')+'">'+WDN[d.getDay()]+'<br>'+d.getDate()+'</th>'; });
+  html+='<th class="avg-h">СР</th></tr>';
+  html+='<tr class="type-row"><th></th><th style="text-align:left;padding-left:8px;">Задать тип →</th>';
+  isos.forEach(i=>{
+    const t=typeOf(curSubject,i);
+    html+='<th class="tcell" title="Задать вид работы" onclick="openTypePicker(\''+i+'\',event)">'+(t?(TYPE_ABBR[t]||''):'')+'</th>';
+  });
+  html+='<th></th></tr></thead><tbody>';
+  students().forEach((stu,i)=>{
+    const zc = (i%2===1) ? ' class="z"' : '';
+    html+='<tr'+zc+'><td class="num">'+(i+1)+'.</td><td class="name">'+USERS[stu].name+'</td>';
+    isos.forEach(isoD=>{
+      const g=findGrade(stu,isoD);
+      const cid='c_'+stu+'_'+isoD;
+      if(g){
+        const val=g.value==='Н'?'Н':(g.value==='О'?'О':(g.weight>1?g.value+'/'+g.weight:g.value));
+        const tp=g.typeWork?(TYPE_ABBR[g.typeWork]||''):'';
+        html+='<td class="mark has-v" id="'+cid+'" onclick="editCell(\''+stu+'\',\''+isoD+'\',\''+g.id+'\')" '+
+          'oncontextmenu="openCellMenu(event,\''+stu+'\',\''+isoD+'\',\''+g.id+'\');return false;">'+
+          '<div class="mv">'+val+'</div>'+(tp?'<div class="mt">'+tp+'</div>':'')+'</td>';
       } else {
-        html += '<td class="empty-c" id="'+cellId+'" ' +
-          'onclick="editCell(\''+stu+'\',\''+iso+'\',null)">·</td>';
+        html+='<td class="mark" id="'+cid+'" onclick="editCell(\''+stu+'\',\''+isoD+'\',null)" '+
+          'oncontextmenu="openCellMenu(event,\''+stu+'\',\''+isoD+'\',null);return false;"></td>';
       }
     });
-    const list = GRADES.filter(x => x.student===stu && x.subject===subj && isos.indexOf(x.date) > -1);
-    let sum=0, w=0;
-    list.forEach(g => { const v = parseFloat(g.value); if (!isNaN(v)) { sum += v*(g.weight||1); w += (g.weight||1); } });
-    html += '<td class="avg">'+(w ? (sum/w).toFixed(1) : '—')+'</td></tr>';
+    const list=GRADES.filter(x=>x.student===stu&&x.subject===curSubject&&isos.indexOf(x.date)>-1);
+    let sum=0,w=0;
+    list.forEach(g=>{ const v=parseFloat(g.value); if(!isNaN(v)){ sum+=v*(g.weight||1); w+=(g.weight||1); } });
+    html+='<td class="avg-val">'+(w?(sum/w).toFixed(1):'')+'</td></tr>';
   });
-  html += '</table>';
-  document.getElementById('journalTable').innerHTML = html;
+  html+='</tbody></table>';
+  document.getElementById('journalTable').innerHTML=html;
+  setupHover();
 }
 
-// Ввод оценки: клик по клетке -> поле ввода на всю клетку -> Enter
-function editCell(student, iso, gradeId){
-  const cell = document.getElementById('c_'+student+'_'+iso);
-  if (!cell) return;
-  const existing = gradeId ? GRADES.find(g=>g.id===gradeId) : null;
-  cell.innerHTML = '';
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.maxLength = 2;
-  input.className = 'cell-input';
-  input.inputMode = 'numeric';
-  input.value = existing ? existing.value : '';
-  cell.appendChild(input);
-  input.focus();
-  input.select();
-  let finished = false;
-  function commit(save){
-    if (finished) return;
-    finished = true;
-    const v = input.value.trim();
-    if (save){
-      const subj = document.getElementById('jSubject').value;
-      const type = document.getElementById('jType').value;
-      if (v === ''){
-        if (gradeId) gradesRef.child(gradeId).remove();
-      } else if (gradeId){
-        gradesRef.child(gradeId).update({ value: v, typeWork: type });
-      } else {
-        gradesRef.push({
-          student: student,
-          subject: subj,
-          value: v,
-          weight: 1,
-          typeWork: type,
-          date: iso
-        });
+function openTypePicker(isoD, evt){
+  if(evt) evt.stopPropagation();
+  const cells=document.querySelectorAll('.jgrid thead tr.type-row th.tcell');
+  const cur=typeOf(curSubject,isoD);
+  let sel='<select onchange="saveType(\''+isoD+'\',this.value)" onclick="event.stopPropagation()">';
+  sel+='<option value="">—</option>';
+  TYPES_LIST.forEach(t=>{ sel+='<option '+(t===cur?'selected':'')+'>'+t+'</option>'; });
+  sel+='</select>';
+  cells.forEach(c=>{
+    const oc=c.getAttribute('onclick')||'';
+    if(oc.indexOf(isoD)>-1) c.innerHTML=sel;
+  });
+}
+function saveType(isoD, val){
+  if(val) typesRef.child(safeKey(curSubject)).child(isoD).set(val);
+  else typesRef.child(safeKey(curSubject)).child(isoD).remove();
+}
+
+function editCell(student, isoD, gradeId){
+  closeCellMenu();
+  highlightCross(document.getElementById('c_'+student+'_'+isoD));
+  const cell=document.getElementById('c_'+student+'_'+isoD);
+  if(!cell) return;
+  const existing=gradeId?GRADES.find(g=>g.id===gradeId):null;
+  cell.innerHTML='';
+  const input=document.createElement('input');
+  input.type='text'; input.maxLength=4; input.className='cell-input'; input.inputMode='numeric';
+  input.value=existing?(existing.value==='Н'||existing.value==='О'?existing.value:(existing.weight>1?existing.value+'/'+existing.weight:existing.value)):'';
+  input.addEventListener('click', e=>e.stopPropagation());
+  cell.appendChild(input); input.focus(); input.select();
+  let done=false;
+  let moved=false;
+  function commit(save, dx, dy){
+    if(done) return;
+    if(dx!==undefined){ done=true; moved=true; }
+    const v=input.value.trim();
+    if(save){
+      const t=typeOf(curSubject,isoD)||'Ответ на уроке';
+      const m=parseMark(v);
+      if(m){
+        const w = m.manual ? m.weight : (TYPE_WEIGHT[t]||1);
+        const dup=findGrade(student,isoD);
+        if(dup){
+          gradesRef.child(dup.id).update({ value:m.value, weight:w, typeWork:t });
+        } else {
+          gradesRef.push({ student:student, subject:curSubject, value:m.value, weight:w, typeWork:t, date:isoD });
+        }
+      } else if(v===''){
+        const dup=gradeId?GRADES.find(g=>g.id===gradeId):findGrade(student,isoD);
+        if(dup) gradesRef.child(dup.id).remove();
       }
     }
-    renderJournal();
+    if(dx!==undefined){
+      moveCell(student, isoD, dx, dy);
+    } else {
+      renderJournal();
+    }
   }
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') commit(true);
-    else if (e.key === 'Escape') commit(false);
-    else if (e.key === 'Tab') { e.preventDefault(); commit(true); }
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ commit(true); }
+    else if(e.key==='Escape'){ commit(false); }
+    else if(e.key==='Tab'){ e.preventDefault(); commit(true); }
+    else if(e.key==='ArrowRight'){ e.preventDefault(); commit(true, 1, 0); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); commit(true, -1, 0); }
+    else if(e.key==='ArrowDown'){ e.preventDefault(); commit(true, 0, 1); }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); commit(true, 0, -1); }
   });
-  input.addEventListener('blur', () => commit(false));
+  input.addEventListener('blur', ()=>{
+    if(!moved) commit(true);
+  });
 }
 
-function setWeight(e, id){
-  e.preventDefault();
-  const g = GRADES.find(x=>x.id===id);
-  if (!g) return;
-  const w = prompt('Вес оценки (1–5):', g.weight || 1);
-  if (w !== null){
-    const n = Math.min(5, Math.max(1, parseInt(w)||1));
-    gradesRef.child(id).update({ weight:n });
+/* ===== МЕНЮ ПО ПРАВОМУ КЛИКУ ===== */
+function closeCellMenu(){
+  const m=document.getElementById('cellMenu');
+  if(m) m.style.display='none';
+}
+document.addEventListener('click', closeCellMenu);
+window.addEventListener('scroll', closeCellMenu, true);
+
+function openCellMenu(e, student, isoD, gradeId){
+  e.preventDefault(); e.stopPropagation();
+  const m=document.getElementById('cellMenu');
+  const g=gradeId?GRADES.find(x=>x.id===gradeId):null;
+  let html='';
+  html+='<div class="cmi" onclick="menuSet(\''+student+'\',\''+isoD+'\',\'Н\')">Н — не был</div>';
+  html+='<div class="cmi" onclick="menuSet(\''+student+'\',\''+isoD+'\',\'О\')">О — опоздал</div>';
+  if(g && parseFloat(g.value)>0){
+    html+='<div class="cmi" onclick="menuWeight(\''+g.id+'\')">Вес оценки…</div>';
+    html+='<div class="cmi danger" onclick="menuDel(\''+g.id+'\')">Удалить оценку</div>';
+  } else if(g){
+    html+='<div class="cmi danger" onclick="menuDel(\''+g.id+'\')">Убрать отметку</div>';
   }
+  m.innerHTML=html;
+  m.style.display='block';
+  const x=Math.min(e.clientX, window.innerWidth-200);
+  const y=Math.min(e.clientY, window.innerHeight-140);
+  m.style.left=x+'px';
+  m.style.top=y+'px';
+}
+function menuSet(student, isoD, mark){
+  closeCellMenu();
+  const t=typeOf(curSubject,isoD)||'Ответ на уроке';
+  const dup=findGrade(student,isoD);
+  if(dup){
+    gradesRef.child(dup.id).update({ value:mark, weight:1, typeWork:t });
+  } else {
+    gradesRef.push({ student:student, subject:curSubject, value:mark, weight:1, typeWork:t, date:isoD });
+  }
+}
+function menuWeight(id){
+  closeCellMenu();
+  const g=GRADES.find(x=>x.id===id); if(!g) return;
+  const w=prompt('Вес оценки (1–9):', g.weight||1);
+  if(w!==null){ const n=Math.min(9,Math.max(1,parseInt(w)||1)); gradesRef.child(id).update({weight:n}); }
+}
+function menuDel(id){
+  closeCellMenu();
+  gradesRef.child(id).remove();
 }
 
 // ===== РАСПИСАНИЕ =====
-const WEEK_DAYS = ['Понедельник','Вторник','Среда','Четверг','Пятница'];
-const DAY_KEYS = { 'Понедельник':'Mon','Вторник':'Tue','Среда':'Wed','Четверг':'Thu','Пятница':'Fri' };
-const DEFAULT_SCHEDULE = {
-  'Понедельник':'Русский язык\nМатематика\nЛитературное чтение\nФизкультура',
-  'Вторник':'Математика\nОкружающий мир\nРусский язык\nМузыка',
-  'Среда':'Литературное чтение\nРусский язык\nИзобразительное искусство\nТехнология',
-  'Четверг':'Математика\nАнглийский язык\nОкружающий мир\nФизкультура',
-  'Пятница':'Русский язык\nМатематика\nЛитературное чтение\nМузыка'
+const WEEK_DAYS=['Понедельник','Вторник','Среда','Четверг','Пятница'];
+const DAY_KEYS={'Понедельник':'Mon','Вторник':'Tue','Среда':'Wed','Четверг':'Thu','Пятница':'Fri'};
+const DEFAULT_SCHEDULE={
+  'Понедельник':'Математика\nРусский язык\nЛитературное чтение\nОкружающий мир\nФизкультура\nРазговоры о важном',
+  'Вторник':'Русский язык\nМатематика\nАнглийский язык\nТруд (технология)\nМузыка\nРазговоры о важном',
+  'Среда':'Математика\nРусский язык\nОкружающий мир\nИЗО\nФизкультура\nЛитературное чтение',
+  'Четверг':'Русский язык\nМатематика\nАнглийский язык\nТруд (технология)\nЛитературное чтение',
+  'Пятница':'Литературное чтение\nМатематика\nРусский язык\nМузыка\nОкружающий мир\nФизкультура'
 };
-function schedText(day){ return (SCHED && SCHED[day]) ? SCHED[day] : (DEFAULT_SCHEDULE[day] || ''); }
-function scheduleTablesHTML(){
-  return WEEK_DAYS.map(day => {
-    const lessons = schedText(day).split('\n').filter(x=>x.trim());
-    return '<table class="schedule" style="margin-bottom:12px;"><tr><th class="day" colspan="2">'+day+'</th></tr>' +
-      lessons.map((s,i)=>'<tr><td style="width:40px;color:#6c737d;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('') +
-      '</table>';
+function schedText(d){ return (SCHED&&SCHED[d])?SCHED[d]:(DEFAULT_SCHEDULE[d]||''); }
+function renderSchedule(){
+  const ed=document.getElementById('schedTeacherEditor'), view=document.getElementById('scheduleList');
+  if(!ed||!view) return;
+  if(isTeacher()){
+    ed.style.display='block';
+    ed.innerHTML='<div class="card sched-editor"><b>Редактирование расписания</b>'+
+      '<div style="font-size:12px;color:#777;margin:4px 0 8px;">Каждый урок — на новой строке.</div>'+
+      WEEK_DAYS.map(d=>'<label style="font-size:13px;font-weight:600;">'+d+'</label><textarea id="sched_'+DAY_KEYS[d]+'">'+schedText(d)+'</textarea>').join('')+
+      '<div style="margin-top:10px;"><button class="blue-btn2" onclick="saveSchedule()">Сохранить расписание</button></div></div>';
+  } else ed.style.display='none';
+  view.innerHTML=WEEK_DAYS.map(day=>{
+    const ls=schedText(day).split('\n').filter(x=>x.trim());
+    return '<table class="schedule"><tr><th class="day" colspan="2">'+day+'</th></tr>'+
+      ls.map((s,i)=>'<tr><td style="width:36px;color:#777;">'+(i+1)+'</td><td>'+s+'</td></tr>').join('')+'</table>';
   }).join('');
 }
-
-function renderSchedule(){
-  const view = document.getElementById('scheduleList');
-  const editor = document.getElementById('schedTeacherEditor');
-  if (isTeacher()){
-    editor.style.display = 'block';
-    editor.innerHTML = '<div class="card sched-editor"><b>Редактирование расписания</b>' +
-      '<div style="font-size:12px;color:#6c737d;margin:4px 0 8px;">Каждый урок — на новой строке.</div>' +
-      WEEK_DAYS.map(d => '<label style="font-size:13px;font-weight:600;">'+d+'</label>' +
-        '<textarea id="sched_'+DAY_KEYS[d]+'">'+schedText(d)+'</textarea>').join('') +
-      '<div style="margin-top:10px;"><button class="btn" onclick="saveSchedule()">Сохранить расписание</button></div></div>';
-  } else {
-    editor.style.display = 'none';
-  }
-  view.innerHTML = scheduleTablesHTML();
-}
 function saveSchedule(){
-  const obj = {};
-  WEEK_DAYS.forEach(d => { obj[d] = document.getElementById('sched_'+DAY_KEYS[d]).value; });
-  schedRef.set(obj);
+  const o={}; WEEK_DAYS.forEach(d=>{ o[d]=document.getElementById('sched_'+DAY_KEYS[d]).value; });
+  schedRef.set(o);
 }
 
-// ===== ДОМАШНИЕ ЗАДАНИЯ =====
+// ===== Д/З =====
+const hwTimers={};
+function hwTyping(inp){
+  const subj=inp.dataset.subj;
+  const isoD=inp.dataset.date;
+  const key=safeKey(subj)+'|'+isoD;
+  clearTimeout(hwTimers[key]);
+  hwTimers[key]=setTimeout(function(){ saveHW(subj, isoD, inp.value, inp); }, 600);
+}
+function saveHW(subj, isoD, val, el){
+  const key=safeKey(subj);
+  const v=(val||'').trim();
+  const done=function(){
+    if(el){ el.classList.add('saved'); setTimeout(function(){ el.classList.remove('saved'); }, 900); }
+  };
+  if(v) hwRef.child(key).child(isoD).set(v).then(done).catch(function(err){ console.error('Д/З не сохранилось:', err); });
+  else hwRef.child(key).child(isoD).remove().then(done).catch(function(err){ console.error('Д/З не удалилось:', err); });
+}
+function updateHwSaveLabel(){
+  const btn=document.getElementById('hwSaveBtn');
+  const info=document.getElementById('hwSaveInfo');
+  if(!btn) return;
+  btn.textContent='Сохранить Д/З: '+curSubject;
+  if(info) info.textContent='';
+}
+function saveAllHW(){
+  const inputs=document.querySelectorAll('#hwTable input.hw-in');
+  let n=0;
+  inputs.forEach(function(inp){
+    const subj=inp.dataset.subj;
+    const isoD=inp.dataset.date;
+    if(subj!==curSubject) return;
+    const v=(inp.value||'').trim();
+    if(v) hwRef.child(safeKey(subj)).child(isoD).set(v);
+    else hwRef.child(safeKey(subj)).child(isoD).remove();
+    inp.classList.add('saved');
+    setTimeout(function(){ inp.classList.remove('saved'); }, 1200);
+    n++;
+  });
+  const info=document.getElementById('hwSaveInfo');
+  if(info){
+    info.textContent='Сохранено: '+curSubject+' — '+n+' дн.';
+    setTimeout(function(){ info.textContent=''; }, 2500);
+  }
+}
+function hwInputsFocused(){
+  const ae=document.activeElement;
+  return !!(ae && ae.classList && ae.classList.contains('hw-in'));
+}
 function renderHomework(){
-  if (!currentUser) return;
-  document.getElementById('hwTeacherForm').style.display = isTeacher() ? 'block':'none';
-  const list = HOMEWORK.slice().sort((a,b)=> new Date(a.due||0) - new Date(b.due||0));
-  document.getElementById('hwList').innerHTML = list.length ? list.map(h =>
-    '<div class="card hw-item" style="display:flex;justify-content:space-between;align-items:center;gap:10px;">' +
-    '<div><div class="meta">'+h.subject+(h.due?' · до '+isoToLabel(h.due):'')+'</div>'+h.text+'</div>' +
-    (isTeacher() ? '<button class="item-x" title="Удалить" onclick="deleteHomework(\''+h.id+'\')">✕</button>' : '') +
-    '</div>').join('')
-    : '<div class="empty">Заданий нет</div>';
+  if(!currentUser) return;
+  const ln2=document.getElementById('lessonName2');
+  const hwBox=document.getElementById('hwTeacherForm');
+  const hwList=document.getElementById('hwList');
+  if(!hwBox||!hwList) return;
+  if(ln2) ln2.textContent=curSubject;
+  if(isTeacher()){
+    renderSubjBtns('subjBtns2');
+    hwBox.style.display='block';
+    if(hwInputsFocused()) return;
+    const days=weekDays(), todayIso=iso(new Date());
+    document.getElementById('hwTable').innerHTML=
+      '<table class="hwgrid"><tr><th>Дата</th><th style="text-align:left;">Домашнее задание</th></tr>'+
+      days.map(function(d){
+        const i=iso(d);
+        const txt=hwOf(curSubject,i);
+        return '<tr><td class="datecell-td"><div class="hw-datecell '+(i===todayIso?'sel':'')+'" title="'+isoToLabel(i)+'">'+
+          WDN[d.getDay()]+'<br>'+d.getDate()+'</div></td>'+
+          '<td><input class="hw-in" data-subj="'+curSubject+'" data-date="'+i+'" value="'+txt.replace(/"/g,'&quot;')+'" '+
+          'oninput="hwTyping(this)" '+
+          'onkeydown="if(event.key===\'Enter\'){this.blur();}" '+
+          'placeholder="Текст задания"></td></tr>';
+      }).join('')+'</table>';
+    hwList.innerHTML='';
+    updateHwSaveLabel();
+  } else {
+    hwBox.style.display='none';
+    const items=[];
+    SUBJECTS.forEach(function(subj){
+      weekDays().forEach(function(d){
+        const i=iso(d); const t=hwOf(subj,i);
+        if(t) items.push({s:subj, d:i, t:t});
+      });
+    });
+    items.sort(function(a,b){ return new Date(a.d)-new Date(b.d); });
+    hwList.innerHTML=items.length?items.map(function(h){
+      return '<div class="card hw-item"><div class="meta">'+h.s+' · '+isoToLabel(h.d)+'</div>'+h.t+'</div>';
+    }).join(''):'<div class="empty">Заданий нет</div>';
+  }
 }
-function addHomework(){
-  const text = document.getElementById('hwText').value.trim();
-  const subj = document.getElementById('hwSubject').value;
-  const due = document.getElementById('hwDue').value;
-  if (!text) return;
-  hwRef.push({ subject:subj, text:text, due:due||null });
-  document.getElementById('hwText').value='';
-}
-function deleteHomework(id){ hwRef.child(id).remove(); }
 
 // ===== УСПЕВАЕМОСТЬ =====
 function renderPerformance(){
-  if (!isTeacher()) return;
-  let html = '<table class="pgrid"><tr><th style="text-align:left;">Ученик</th>' +
-    SUBJECTS.map(s=>'<th>'+s+'</th>').join('') + '</tr>';
-  studentLoginList().forEach(stu => {
-    html += '<tr><td class="name">'+USERS[stu].name+'</td>';
-    SUBJECTS.forEach(subj => {
-      const list = GRADES.filter(x => x.student===stu && x.subject===subj);
-      let sum=0, w=0;
-      list.forEach(g => { const v = parseFloat(g.value); if (!isNaN(v)) { sum += v*(g.weight||1); w += (g.weight||1); } });
-      html += '<td>'+(w ? Math.round(sum/w) : '—')+'</td>';
+  if(!isTeacher()) return;
+  let html='<table class="pgrid"><tr><th style="text-align:left;">Ученик</th>'+SUBJECTS.map(s=>'<th>'+s+'</th>').join('')+'</tr>';
+  students().forEach(function(stu){
+    html+='<tr><td class="name">'+USERS[stu].name+'</td>';
+    SUBJECTS.forEach(function(subj){
+      const list=GRADES.filter(x=>x.student===stu&&x.subject===subj);
+      let sum=0,w=0;
+      list.forEach(function(g){ const v=parseFloat(g.value); if(!isNaN(v)){ sum+=v*(g.weight||1); w+=(g.weight||1); } });
+      html+='<td>'+(w?Math.round(sum/w):'—')+'</td>';
     });
-    html += '</tr>';
+    html+='</tr>';
   });
-  html += '</table>';
-  document.getElementById('perfTable').innerHTML = html;
+  html+='</table>';
+  document.getElementById('perfTable').innerHTML=html;
+}
+
+// ===== ДНЕВНИК =====
+function renderDiary(){
+  if(!currentUser||currentUser.role!=='student') return;
+  const list=GRADES.filter(g=>g.student===currentUser.login);
+  const groups={};
+  list.forEach(function(g){ const d=g.date||'—'; if(!groups[d]) groups[d]=[]; groups[d].push(g); });
+  const dates=Object.keys(groups).sort(function(a,b){ return new Date(b)-new Date(a); });
+  document.getElementById('diaryList').innerHTML=dates.length?dates.map(function(d){
+    return '<div class="date-pill">'+isoToLabel(d)+'</div><div class="day-card">'+groups[d].map(function(g){
+      const isNum=!isNaN(parseInt(g.value));
+      const cls=isNum?('g'+String(g.value).charAt(0)):'gn';
+      return '<div class="grade-row"><div class="grade-box '+cls+'">'+g.value+
+        (isNum&&g.weight>1?'<span class="weight-badge">'+g.weight+'</span>':'')+'</div>'+
+        '<div class="grade-info"><div class="subj">'+g.subject+'</div><div class="wtype">'+(g.typeWork||'Ответ на уроке')+'</div></div></div>';
+    }).join('')+'</div>';
+  }).join(''):'<div class="empty">Оценок пока нет</div>';
 }
 
 // ===== ПРОФИЛЬ =====
 function renderProfile(){
-  if (!currentUser || currentUser.role!=='student') return;
-  document.getElementById('profileCard').innerHTML =
-    '<div style="display:flex;align-items:center;gap:16px;">' +
-    '<div class="avatar" style="width:64px;height:64px;font-size:26px;">'+currentUser.name.charAt(0)+'</div>' +
-    '<div><div style="font-size:18px;font-weight:700;">'+currentUser.name+'</div>' +
-    '<div style="color:#6c737d;font-size:14px;margin-top:4px;">'+currentUser.klass+'</div></div></div>';
+  if(!currentUser||currentUser.role!=='student') return;
+  document.getElementById('profileCard').innerHTML=
+    '<div style="display:flex;align-items:center;gap:14px;">'+
+    '<div class="avatar" style="width:56px;height:56px;font-size:24px;background:#2f6db5;">'+currentUser.name.charAt(0)+'</div>'+
+    '<div><div style="font-weight:700;font-size:17px;">'+currentUser.name+'</div>'+
+    '<div style="color:#777;font-size:13px;margin-top:3px;">'+currentUser.klass+'</div>'+
+    '<div style="color:#999;font-size:12px;margin-top:3px;">'+SCHOOL_NAME+'</div></div></div>';
 }
 
-// ===== СТАРТ =====
-buildUI();
+function renderAll(){
+  if(!currentUser || document.getElementById('screen-app').style.display!=='block') return;
+  renderJournal(); renderSchedule(); renderHomework(); renderPerformance(); renderDiary(); renderProfile();
+}
 </script>
 </body>
 </html>
